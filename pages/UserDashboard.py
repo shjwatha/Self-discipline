@@ -77,7 +77,8 @@ def load_data():
 
 
 
-full_name = st.session_state.get("full_name", username)
+merged_df["full_name"] = merged_df["username"].map(lambda x: users_df.get(users_df["username"] == x, {}).get("full_name", "غير موجود"))
+
 
 
 # ===== دالة عرض المحادثة =====
