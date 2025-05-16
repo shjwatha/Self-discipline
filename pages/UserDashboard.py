@@ -225,94 +225,74 @@ with tabs[0]:
 
 
 
-# نموذج للتفاعل مع المستخدم
-        with st.form(key='form_1'):  # استخدام form لتحديد نموذج واحد
-            # الاختيارات الأولى
-            st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الأولى</h3>", unsafe_allow_html=True)
-            options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
-            ratings_1 = {
-                "في المسجد جماعة": 5,
-                "في المنزل جماعة": 4,
-                "في المسجد منفرد": 3,
-                "في المنزل منفرد": 2,
-                "خارج الوقت": 0
-            }
-        
-            for i, col in enumerate(columns[1:6]):
-                st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-                rating = st.radio(col, options_1, index=0, key=col)
-                values.append(str(ratings_1[rating]))
-        
-            # الاختيارات الثانية
-            st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثانية</h3>", unsafe_allow_html=True)
-            options_2 = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"]
-            ratings_2 = {
-                "الفجر": 1,
-                "الظهر": 1,
-                "العصر": 1,
-                "المغرب": 1,
-                "العشاء": 1
-            }
-        
-            total_rating = 0
-            for i, col in enumerate(columns[6:7]):  # العمود السادس فقط
-                st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-                
-                selected_options = []
-                for option in options_2:
-                    if st.checkbox(option, key=f"{col}_{option}"):
-                        selected_options.append(option)
-                        total_rating += ratings_2[option]
-        
-                values.append(str(total_rating))
-        
-            # الاختيارات الثالثة
-            st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثالثة</h3>", unsafe_allow_html=True)
-            options_3 = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
-            ratings_3 = {
-                "قرأته لفترتين": 2,
-                "قرأته مرة واحدة في اليوم": 1,
-                "لم أتمكن من قراءته لهذا اليوم": 0
-            }
-        
-            for i, col in enumerate(columns[7:9]):  # العمود السابع والثامن فقط
-                st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-                rating = st.radio(col, options_3, index=0, key=col)
-                values.append(str(ratings_3[rating]))
-        
-            # الاختيارات الرابعة (من العمود 9 إلى 14)
-            st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الرابعة</h3>", unsafe_allow_html=True)
-            options_4 = ["نعم", "لا"]
-            ratings_4 = {
-                "نعم": 2,
-                "لا": 0
-            }
-        
-            for i, col in enumerate(columns[9:15]):  # من العمود التاسع إلى الرابع عشر
-                st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-                rating = st.radio(col, options_4, index=0, key=col)
-                values.append(str(ratings_4[rating]))
-        
-            # الاختيارات الأخيرة (لما يتبقى من الأعمدة)
-            options_5 = ["نعم", "لا"]
-            ratings_5 = {
-                "نعم": 1,
-                "لا": 0
-            }
-        
-            for i, col in enumerate(columns[15:]):  # الأعمدة المتبقية
-                st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-                rating = st.radio(col, options_5, index=0, key=col)
-                values.append(str(ratings_5[rating]))
-        
-            # زر الإرسال
-            submit = st.form_submit_button("💾 حفظ")
-        
-        # التعامل مع الزر
-        if submit:
-            st.success("تم حفظ البيانات بنجاح!") 
-        
 
+
+# الاختيارات الأولى
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الأولى</h3>", unsafe_allow_html=True)
+        options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
+        ratings_1 = {
+            "في المسجد جماعة": 5,
+            "في المنزل جماعة": 4,
+            "في المسجد منفرد": 3,
+            "في المنزل منفرد": 2,
+            "خارج الوقت": 0
+        }
+        
+        for i, col in enumerate(columns[1:6]):
+            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
+            rating = st.radio(col, options_1, index=0, key=col)
+            values.append(str(ratings_1[rating]))
+        
+        # الاختيارات الثانية - العمود السادس بخيارات متعددة
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثانية</h3>", unsafe_allow_html=True)
+        time_options = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"]
+        selected_times = st.multiselect(columns[6], time_options, key=columns[6])
+        score_time = len(selected_times)  # كل خيار مختار يعطي 1 درجة
+        values.append(str(score_time))
+        
+        # العمود السابع والثامن
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود السابع والثامن</h3>", unsafe_allow_html=True)
+        read_options = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
+        read_ratings = {
+            "قرأته لفترتين": 2,
+            "قرأته مرة واحدة في اليوم": 1,
+            "لم أتمكن من قراءته لهذا اليوم": 0
+        }
+        
+        for col in columns[7:9]:
+            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
+            rating = st.radio(col, read_options, index=0, key=col)
+            values.append(str(read_ratings[rating]))
+        
+        # الاختيارات من العامود 9 وحتى العامود 14 (إجابتان نعم أو لا: نعم 2 درجة، لا 0)
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات من العامود 9 وحتى العامود 14</h3>", unsafe_allow_html=True)
+        binary_options_2 = ["نعم", "لا"]
+        binary_ratings_2 = {
+            "نعم": 2,
+            "لا": 0
+        }
+        
+        for col in columns[9:15]:
+            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
+            rating = st.radio(col, binary_options_2, index=0, key=col)
+            values.append(str(binary_ratings_2[rating]))
+        
+        # باقي الأعمدة (إجابتان نعم أو لا: نعم 1 درجة، لا 0)
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>باقي الأعمدة</h3>", unsafe_allow_html=True)
+        binary_options_1 = ["نعم", "لا"]
+        binary_ratings_1 = {
+            "نعم": 1,
+            "لا": 0
+        }
+        
+        for col in columns[15:]:
+            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
+            rating = st.radio(col, binary_options_1, index=0, key=col)
+            values.append(str(binary_ratings_1[rating]))
+        
+        # زر الإرسال
+        submit = st.form_submit_button("💾 حفظ") 
+        
 
 
 
