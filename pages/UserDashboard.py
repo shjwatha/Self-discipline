@@ -249,7 +249,7 @@ with tabs[0]:
 
 
 
-# الاختيارات الثانية (مع مربعات اختيار متعددة)
+ # الاختيارات الثانية (مع مربعات اختيار متعددة)
         st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثانية</h3>", unsafe_allow_html=True)
         
         # قائمة الخيارات
@@ -264,19 +264,25 @@ with tabs[0]:
             "العشاء": 1
         }
         
-        # جمع الدرجات
-        total_rating = 0  # لتخزين إجمالي الدرجات
-        selected_options = []  # لتخزين الخيارات المحددة من قبل المستخدم
+        # قائمة لتخزين البند (الاختيارات) التي تم تحديدها
+        selected_options = []  
         
-        # عرض مربعات الاختيار (checkboxes) لكل خيار
+        # جمع الدرجات لكل خيار تم اختياره
         for option in options_2:
             if st.checkbox(option, key=option):  # إذا تم اختيار المربع
                 selected_options.append(option)  # إضافة الخيار إلى القائمة
-                total_rating += ratings_2[option]  # جمع الدرجة (1 لكل خيار)
         
-        # عرض مجموع الدرجات
-        st.markdown(f"<h4 style='color: #0000FF;'>إجمالي الدرجات المحددة: {total_rating}</h4>", unsafe_allow_html=True)
-        
+        # إرسال الدرجات إلى Google Sheets
+        if selected_options:
+            for option in selected_options:
+                # هنا يتم إضافة البند إلى Google Sheets مع درجته
+                # يمكنك إرسال البيانات إلى ورقة العمل المناسبة في Google Sheets هنا
+                # مثال على طريقة الإضافة:
+                worksheet.append_row([datetime.today().date(), option, ratings_2[option]])
+                
+            st.success("✅ تم إرسال الدرجات بنجاح.")
+        else:
+            st.warning("⚠️ لم يتم اختيار أي بند.")
                 
 
 
