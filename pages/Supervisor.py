@@ -79,22 +79,8 @@ if permissions in ["supervisor", "sp"]:
 if permissions == "supervisor":
     filtered_users = users_df[(users_df["role"] == "user") & (users_df["Mentor"] == username)]
 elif permissions == "sp":
-
-
-
-    # تصفية المشرفين تحت إشراف السوبر مشرف
     supervised_supervisors = users_df[(users_df["role"] == "supervisor") & (users_df["Mentor"] == username)]["username"].tolist()
-    print(f"مشرفين تحت إشراف السوبر مشرف: {supervised_supervisors}")  # طباعة للمساعدة في التشخيص
-
-# تصفية المستخدمين الذين تحت إشراف المشرفين
     filtered_users = users_df[(users_df["role"] == "user") & (users_df["Mentor"].isin(supervised_supervisors))]
-    print(f"المستخدمين الذين تحت إشراف المشرفين: {filtered_users['username'].tolist()}")  # طباعة للمساعدة في التشخيص
-
-
-
-
-
-
 else:
     filtered_users = pd.DataFrame()
 
@@ -117,23 +103,11 @@ for _, user in filtered_users.iterrows():
     except Exception as e:
         st.warning(f"⚠️ خطأ في تحميل بيانات {user_name}: {e}")
 
-
 if not all_data:
     st.info("ℹ️ لا توجد بيانات.")
-    st.warning("لا توجد بيانات حالياً لعرضها.")  # رسالة تنبيه للمستخدم
-    # بدلاً من التوقف، يمكن عرض التبويبات الفارغة
-    # لا نوقف الكود، بل نسمح للواجهة بالاستمرار بالظهور مع رسائل تحذير فقط
+    st.stop()
 
-
-
-
-# تحقق من أن all_data ليست فارغة قبل الدمج
-if all_data:
-    merged_df = pd.concat(all_data, ignore_index=True)
-else:
-    st.warning("ℹ️ لا توجد بيانات لدمجها.")
-    merged_df = pd.DataFrame()  # تأكد من أن merged_df سيكون DataFrame فارغ إذا كانت all_data فارغة
-
+merged_df = pd.concat(all_data, ignore_index=True)
 
 # ====== تبويبات الصفحة ======
 tabs = st.tabs([" تقرير إجمالي", "💬 المحادثات", "📋 تجميعي الكل", "📌 تجميعي بند", " تقرير فردي", "📈 رسوم بيانية"])
@@ -267,27 +241,7 @@ with tabs[0]:
 
     # التجميع بناءً على username
     scores = df_filtered.drop(columns=["التاريخ", "username"], errors="ignore")
-
-
-
-# تحقق من أن العمود "username" موجود
-    if "username" not in df_filtered.columns:
-        st.error("⚠️ العمود 'username' غير موجود في البيانات.")
-        grouped = pd.DataFrame()  # إذا لم يكن العمود موجودًا، نعيد DataFrame فارغ
-    else:
-    # تحقق من أن الأعمدة في scores.columns موجودة في df_filtered
-        missing_columns = [col for col in scores.columns if col not in df_filtered.columns]
-        if missing_columns:
-            st.error(f"⚠️ الأعمدة المفقودة: {', '.join(missing_columns)}")
-            grouped = pd.DataFrame()  # إعادة DataFrame فارغ في حال كان هناك أعمدة مفقودة
-        else:
-            # تنفيذ عملية groupby إذا كانت الأعمدة موجودة
-            grouped = df_filtered.groupby("username")[scores.columns].sum()
-
-
-
-
-
+    grouped = df_filtered.groupby("username")[scores.columns].sum()
     grouped["المجموع"] = grouped.sum(axis=1, numeric_only=True)
     grouped = grouped.sort_values(by="المجموع", ascending=True)
 
