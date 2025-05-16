@@ -224,6 +224,7 @@ with tabs[0]:
 
 
 
+
 # الاختيارات الأولى
         st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الأولى</h3>", unsafe_allow_html=True)
         options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
@@ -240,16 +241,24 @@ with tabs[0]:
             rating = st.radio(col, options_1, index=0, key=col)
             values.append(str(ratings_1[rating]))
         
-        # العامود السادس
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العامود السادس</h3>", unsafe_allow_html=True)
+        # الاختيارات الثانية
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثانية</h3>", unsafe_allow_html=True)
         options_2 = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"]
-        # يمكن للمستخدم ترك هذا العامود بدون إجابة؛ إذ لن يكون هناك اختيار افتراضي
-        selected_times = st.multiselect(columns[6], options_2, key=columns[6])
-        score_times = len(selected_times)  # كل اختيار يعطي 1 درجة
-        values.append(str(score_times))
+        ratings_2 = {
+            "الفجر": 1,
+            "الظهر": 1,
+            "العصر": 1,
+            "المغرب": 1,
+            "العشاء": 1
+        }
         
-        # العامود السابع والثامن
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العامود السابع والثامن</h3>", unsafe_allow_html=True)
+        for i, col in enumerate(columns[6:7]):  # العمود السادس فقط
+            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
+            rating = st.radio(col, options_2, index=0, key=col)
+            values.append(str(ratings_2[rating]))
+        
+        # الاختيارات الثالثة
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثالثة</h3>", unsafe_allow_html=True)
         options_3 = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
         ratings_3 = {
             "قرأته لفترتين": 2,
@@ -257,41 +266,39 @@ with tabs[0]:
             "لم أتمكن من قراءته لهذا اليوم": 0
         }
         
-        for col in columns[7:9]:
+        for i, col in enumerate(columns[7:9]):  # العمود السابع والثامن فقط
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
             rating = st.radio(col, options_3, index=0, key=col)
             values.append(str(ratings_3[rating]))
         
-        # الاختيارات من العامود 9 وحتى العامود 14 (نعم/لا: نعم 2 درجة، لا 0)
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات من العامود 9 وحتى العامود 14</h3>", unsafe_allow_html=True)
+        # الاختيارات الرابعة (من العمود 9 إلى 14)
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الرابعة</h3>", unsafe_allow_html=True)
         options_4 = ["نعم", "لا"]
         ratings_4 = {
             "نعم": 2,
             "لا": 0
         }
         
-        for col in columns[9:15]:
+        for i, col in enumerate(columns[9:15]):  # من العمود التاسع إلى الرابع عشر
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
             rating = st.radio(col, options_4, index=0, key=col)
             values.append(str(ratings_4[rating]))
         
-        # باقي الأعمدة (إجابتان نعم أو لا: نعم 1 درجة، لا 0)
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>باقي الأعمدة</h3>", unsafe_allow_html=True)
+        # الاختيارات الأخيرة (لما يتبقى من الأعمدة)
         options_5 = ["نعم", "لا"]
         ratings_5 = {
             "نعم": 1,
             "لا": 0
         }
         
-        for col in columns[15:]:
+        for i, col in enumerate(columns[15:]):  # الأعمدة المتبقية
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
             rating = st.radio(col, options_5, index=0, key=col)
             values.append(str(ratings_5[rating]))
         
         # زر الإرسال
-        submit = st.form_submit_button("💾 حفظ")
+        submit = st.form_submit_button("💾 حفظ") 
         
-
 
 
 
