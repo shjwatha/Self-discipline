@@ -48,18 +48,19 @@ def get_default_columns():
         "صلاة العصر",
         "صلاة المغرب",
         "صلاة العشاء",
-        "الوتر",
-        "الضحى",
-        "السنن الرواتب",
-        "ورد النووي",
-        "مختصر الإشراق",
-        "قراءة كتاب",
-        "تلاوة قرآن (لا يقل عن ثمن)",
+        "االسنن الرواتب",
+        "اورد الإمام النووي رحمه الله",
+        "مختصر إشراق الضياء",
+        "سنة الوتر",
+        "سنة الضحى",
         "حضور درس",
-        "التهليل",
-        "استغفار",
-        "صلاة على الحبيب",
-        "دعاء"
+        "تلاوة قرآن (لا يقل عن ثمن)",
+        "الدعاء مخ العبادة",
+        "قراءة كتاب شرعي",
+        "لا إله إلا الله",
+        "الاستغفار",
+        "الصلاة على سيدنا رسول الله صلى الله عليه وسلم",
+        "تطوع ( خبئية - أوابين - تسابيح )"
     ]
 
 # ===== عرض المشرفين في النظام =====
@@ -69,20 +70,19 @@ supervisors_df = users_df[users_df["role"] == "supervisor"]
 # ===== إنشاء مستخدم جديد =====
 st.subheader("➕ إنشاء حساب جديد")
 with st.form("create_user_form"):
-    full_name = st.text_input("الاسم الكامل")  # رفع الاسم الكامل أولًا
-    username = st.text_input("Username")  # ثم اسم المستخدم
+    username = st.text_input("Username")
     password = st.text_input("Password")
     role = "user"  # تم تثبيت الصلاحية على user فقط
 
-    # اختيار المشرف من قائمة المشرفين فقط (عرض الاسم الكامل)
-    mentor_options = supervisors_df["full_name"].tolist()  # عرض الاسم الكامل للمشرفين
-    mentor = st.selectbox("اختار المشرف", mentor_options)  # اختيار المشرف حسب الاسم الكامل
+    # اختيار المشرف من قائمة المشرفين فقط
+    mentor_options = supervisors_df["username"].tolist()  # أسماء المشرفين فقط
+    mentor = st.selectbox("اختار المشرف", mentor_options)  # اختيار المشرف
 
     create = st.form_submit_button("Create")
 
     if create:
-        if not username or not password or not mentor or not full_name:
-            st.warning("يرجى إدخال اسم المستخدم وكلمة المرور والاسم الكامل واختيار المشرف")
+        if not username or not password or not mentor:
+            st.warning("يرجى إدخال اسم المستخدم وكلمة المرور واختيار المشرف")
         elif username in users_df["username"].values:
             st.error("🚫 اسم المستخدم موجود مسبقًا")
         else:
@@ -90,7 +90,7 @@ with st.form("create_user_form"):
                 worksheet_name = f"بيانات - {username}"
                 worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="30")
                 worksheet.insert_row(get_default_columns(), 1)
-                admin_sheet.append_row([username, full_name, password, worksheet_name, role, mentor])  # إضافة الاسم الكامل
+                admin_sheet.append_row([username, password, worksheet_name, role, mentor])  # إضافة المشرف
                 st.success("✅ تم إنشاء المستخدم والورقة بنجاح")
                 st.rerun()
             except Exception as e:
@@ -100,5 +100,5 @@ with st.form("create_user_form"):
 st.subheader("📋 قائمة المستخدمين")
 
 # عرض جميع المستخدمين مع الأعمدة المطلوبة فقط
-filtered_df = users_df[["username", "full_name", "role", "Mentor"]]  # إضافة "full_name" في العرض
+filtered_df = users_df[["username", "role", "Mentor"]]  # اختيار الأعمدة المطلوبة
 st.dataframe(filtered_df, use_container_width=True)
