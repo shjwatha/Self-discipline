@@ -117,9 +117,15 @@ for _, user in filtered_users.iterrows():
     except Exception as e:
         st.warning(f"⚠️ خطأ في تحميل بيانات {user_name}: {e}")
 
+
 if not all_data:
     st.info("ℹ️ لا توجد بيانات.")
-    st.stop()
+    st.warning("لا توجد بيانات حالياً لعرضها.")  # رسالة تنبيه للمستخدم
+    # بدلاً من التوقف، يمكن عرض التبويبات الفارغة
+    # لا نوقف الكود، بل نسمح للواجهة بالاستمرار بالظهور مع رسائل تحذير فقط
+
+
+
 
 merged_df = pd.concat(all_data, ignore_index=True)
 
