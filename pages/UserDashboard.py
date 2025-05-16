@@ -224,83 +224,84 @@ with tabs[0]:
 
 
 # الاختيارات الأولى: الأعمدة الخمسة الأولى بدون تعديل
-st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الأولى</h3>", unsafe_allow_html=True)
-options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
-ratings_1 = {
-    "في المسجد جماعة": 5,
-    "في المنزل جماعة": 4,
-    "في المسجد منفرد": 3,
-    "في المنزل منفرد": 2,
-    "خارج الوقت": 0
-}
-
-for col in columns[1:6]:
-    st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-    rating = st.radio(col, options_1, index=0, key=col)
-    values.append(str(ratings_1[rating]))
-
-# العمود السادس: خيارات متعددة (Checkboxes) – كل خيار 1 درجة
-st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود السادس: أوقات الصلاة (كل اختيار 1 درجة)</h3>", unsafe_allow_html=True)
-checkbox_options = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"]
-st.markdown(f"<h4 style='font-weight: bold;'>{columns[6]}</h4>", unsafe_allow_html=True)
-
-# نضع الخيارات في سطر منفصل باستخدام st.columns(1)
-checkbox_cols = st.columns(1)
-selected_checkboxes = []
-for option in checkbox_options:
-    with checkbox_cols[0]:
-        if st.checkbox(option, key=f"{columns[6]}_{option}"):
-            selected_checkboxes.append(option)
-score_checkbox = len(selected_checkboxes)  # كل خيار مختار يعطي درجة واحدة
-values.append(str(score_checkbox))
-
-# العمود السابع والثامن: تقييم القراءة بخيارات اختيار واحد
-st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود السابع والثامن: تقييم القراءة</h3>", unsafe_allow_html=True)
-time_read_options = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
-ratings_read = {"قرأته لفترتين": 2, "قرأته مرة واحدة في اليوم": 1, "لم أتمكن من قراءته لهذا اليوم": 0}
-for col_name in columns[7:9]:
-    st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-    rating = st.radio("", time_read_options, horizontal=True, key=col_name)
-    values.append(str(ratings_read[rating]))
-
-# الأعمدة من 9 إلى 14: إجابتان نعم أو لا (إذا كانت الإجابة نعم تعطي 2 درجة، ولا تعطي 0)
-st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود 9 إلى 14: تقييم بنعم أو لا (نعم = 2 درجة، لا = 0)</h3>", unsafe_allow_html=True)
-yes_no_options = ["نعم", "لا"]
-ratings_yes2 = {"نعم": 2, "لا": 0}
-for col_name in columns[9:15]:
-    st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-    rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
-    values.append(str(ratings_yes2[rating]))
-
-# باقي الأعمدة إذا وُجدت: إجابتان نعم أو لا (نعم = 1 درجة، لا = 0)
-if len(columns) > 15:
-    st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>بقية الأعمدة: تقييم بنعم أو لا (نعم = 1 درجة، لا = 0)</h3>", unsafe_allow_html=True)
-    remaining_columns = columns[15:]
-    for col_name in remaining_columns:
-        st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-        rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
-        values.append(str(ratings_yes1[rating]))
-
-# زر الإرسال والحفظ
-submit = st.form_submit_button("💾 حفظ")
-
-if submit:
-    if selected_date not in [d for _, d in hijri_dates]:
-        st.error("❌ التاريخ غير صالح. لا يمكن حفظ البيانات لأكثر من أسبوع سابق فقط")
-    else:
-        all_dates = worksheet.col_values(1)
-        date_str = selected_date.strftime("%Y-%m-%d")
-        try:
-            row_index = all_dates.index(date_str) + 1
-        except ValueError:
-            row_index = len(all_dates) + 1
-            worksheet.update_cell(row_index, 1, date_str)
-        for i, val in enumerate(values[1:], start=2):
-            worksheet.update_cell(row_index, i, val)
-
-        st.cache_data.clear()
-        data = load_data()
-        st.success("✅ تم الحفظ بنجاح والاتصال بقاعدة البيانات")
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الأولى</h3>", unsafe_allow_html=True)
+        options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
+        ratings_1 = {
+            "في المسجد جماعة": 5,
+            "في المنزل جماعة": 4,
+            "في المسجد منفرد": 3,
+            "في المنزل منفرد": 2,
+            "خارج الوقت": 0
+        }
+        
+        for col in columns[1:6]:
+            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
+            rating = st.radio(col, options_1, index=0, key=col)
+            values.append(str(ratings_1[rating]))
+        
+        # العمود السادس: خيارات متعددة (Checkboxes) – كل خيار 1 درجة
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود السادس: أوقات الصلاة (كل اختيار 1 درجة)</h3>", unsafe_allow_html=True)
+        checkbox_options = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"]
+        st.markdown(f"<h4 style='font-weight: bold;'>{columns[6]}</h4>", unsafe_allow_html=True)
+        
+        # نضع الخيارات في سطر منفصل باستخدام st.columns(1)
+        checkbox_cols = st.columns(1)
+        selected_checkboxes = []
+        for option in checkbox_options:
+            with checkbox_cols[0]:
+                if st.checkbox(option, key=f"{columns[6]}_{option}"):
+                    selected_checkboxes.append(option)
+        score_checkbox = len(selected_checkboxes)  # كل خيار مختار يعطي درجة واحدة
+        values.append(str(score_checkbox))
+        
+        # العمود السابع والثامن: تقييم القراءة بخيارات اختيار واحد
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود السابع والثامن: تقييم القراءة</h3>", unsafe_allow_html=True)
+        time_read_options = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
+        ratings_read = {"قرأته لفترتين": 2, "قرأته مرة واحدة في اليوم": 1, "لم أتمكن من قراءته لهذا اليوم": 0}
+        for col_name in columns[7:9]:
+            st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
+            rating = st.radio("", time_read_options, horizontal=True, key=col_name)
+            values.append(str(ratings_read[rating]))
+        
+        # الأعمدة من 9 إلى 14: إجابتان نعم أو لا (إذا كانت الإجابة نعم تعطي 2 درجة، ولا تعطي 0)
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود 9 إلى 14: تقييم بنعم أو لا (نعم = 2 درجة، لا = 0)</h3>", unsafe_allow_html=True)
+        yes_no_options = ["نعم", "لا"]
+        ratings_yes2 = {"نعم": 2, "لا": 0}
+        for col_name in columns[9:15]:
+            st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
+            rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
+            values.append(str(ratings_yes2[rating]))
+        
+        # باقي الأعمدة إذا وُجدت: إجابتان نعم أو لا (نعم = 1 درجة، لا = 0)
+        if len(columns) > 15:
+            st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>بقية الأعمدة: تقييم بنعم أو لا (نعم = 1 درجة، لا = 0)</h3>", unsafe_allow_html=True)
+            remaining_columns = columns[15:]
+            for col_name in remaining_columns:
+                st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
+                rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
+                values.append(str(ratings_yes1[rating]))
+        
+        # زر الإرسال والحفظ
+        submit = st.form_submit_button("💾 حفظ")
+        
+        if submit:
+            if selected_date not in [d for _, d in hijri_dates]:
+                st.error("❌ التاريخ غير صالح. لا يمكن حفظ البيانات لأكثر من أسبوع سابق فقط")
+            else:
+                all_dates = worksheet.col_values(1)
+                date_str = selected_date.strftime("%Y-%m-%d")
+                try:
+                    row_index = all_dates.index(date_str) + 1
+                except ValueError:
+                    row_index = len(all_dates) + 1
+                    worksheet.update_cell(row_index, 1, date_str)
+                for i, val in enumerate(values[1:], start=2):
+                    worksheet.update_cell(row_index, i, val)
+        
+                st.cache_data.clear()
+                data = load_data()
+                st.success("✅ تم الحفظ بنجاح والاتصال بقاعدة البيانات") 
+        
 
 
 
