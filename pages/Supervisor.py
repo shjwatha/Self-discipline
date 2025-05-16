@@ -62,16 +62,23 @@ st.markdown(
 )
 
 st.title(f"👋 أهلاً {st.session_state.get('full_name')}")
-
 # ===== تحديد المستخدمين المتاحين للمحادثة =====
 all_user_options = []
 
+# إضافة المشرفين بناءً على الدور
 if permissions == "sp":
     my_supervisors = users_df[(users_df["role"] == "supervisor") & (users_df["Mentor"] == username)]["username"].tolist()
     all_user_options += [(s, "مشرف") for s in my_supervisors]
 
+# إضافة المستخدمين بناءً على المشرفين المعينين
 if permissions in ["supervisor", "sp"]:
+    # تأكد من إضافة المستخدمين الجدد والقدامى
     assigned_users = users_df[(users_df["role"] == "user") & (users_df["Mentor"].isin([username] + [s for s, _ in all_user_options]))]
+    all_user_options += [(u, "مستخدم") for u in assigned_users["username"].tolist()]
+
+# إضافة مشرفين جدد إذا كانوا موجودين
+if permissions == "supervisor" or permissions == "sp":
+    assigned_users = users_df[(users_df["role"] == "user") & (users_df["Mentor"] == username)]
     all_user_options += [(u, "مستخدم") for u in assigned_users["username"].tolist()]
 
 # إضافة سوبر مشرفين (إن وُجدوا) إلى القائمة للدردشة معهم
