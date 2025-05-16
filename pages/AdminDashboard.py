@@ -71,8 +71,8 @@ supervisors_df = users_df[users_df["role"] == "supervisor"]
 # ===== إنشاء مستخدم جديد =====
 st.subheader("➕ إنشاء حساب جديد")
 with st.form("create_user_form"):
-    full_name = st.text_input("الاسم الكامل")  # رفع الاسم الكامل أولًا
-    username = st.text_input("اسم المستخدم")  # ثم اسم المستخدم
+    username = st.text_input("الاسم الكامل")  # رفع اسم المستخدم أولًا
+    full_name = st.text_input("اسم المستخدم")  # ثم الاسم الكامل
     password = st.text_input("كلمة المرور")
     role = "user"  # تم تثبيت الصلاحية على user فقط
 
@@ -92,7 +92,7 @@ with st.form("create_user_form"):
                 worksheet_name = f"بيانات - {username}"
                 worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="30")
                 worksheet.insert_row(get_default_columns(), 1)
-                admin_sheet.append_row([username, full_name, password, worksheet_name, role, mentor])  # إضافة الاسم الكامل
+                admin_sheet.append_row([full_name, username, password, worksheet_name, role, mentor])  # إضافة الاسم الكامل واسم المستخدم
                 st.success("✅ تم إنشاء المستخدم والورقة بنجاح")
                 st.rerun()
             except Exception as e:
