@@ -1,7 +1,6 @@
 import streamlit as st
 import gspread
 import pandas as pd
-import time
 import json
 from google.oauth2.service_account import Credentials
 from datetime import datetime
@@ -442,16 +441,9 @@ with tabs[5]:
             (df_filtered["التاريخ"] <= pd.to_datetime(end_date))
         ]
     
-    # ===== التحديث التلقائي بعد 5 ثوانٍ من زيارة الصفحة =====
-    time.sleep(5)  # تأخير 5 ثوانٍ قبل محاكاة الضغط على الزر
-    st.experimental_rerun()  # إعادة تحميل الصفحة بعد التأخير
-
-# ===== زر التحديث =====
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_6"):
-        st.cache_data.clear()  # مسح الـ cache
-        time.sleep(5)  # تأخير 5 ثوانٍ
-        data = load_data()  # جلب البيانات بعد التأخير
-        st.success("✅ تم جلب البيانات بنجاح")
+        st.cache_data.clear()
+        st.rerun()
     
     # التجميع بحسب username
     scores = df_filtered.drop(columns=["التاريخ", "username"], errors="ignore")
