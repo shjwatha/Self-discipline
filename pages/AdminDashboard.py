@@ -71,8 +71,8 @@ supervisors_df = users_df[users_df["role"] == "supervisor"]
 # ===== إنشاء مستخدم جديد =====
 st.subheader("➕ إنشاء حساب جديد")
 with st.form("create_user_form"):
-    username = st.text_input("الاسم الكامل")  # رفع اسم المستخدم أولًا
-    full_name = st.text_input("اسم المستخدم")  # ثم الاسم الكامل
+    full_name = st.text_input("الاسم الكامل")  # رفع الاسم الكامل أولًا
+    username = st.text_input("اسم المستخدم")  # ثم اسم المستخدم
     password = st.text_input("كلمة المرور")
     role = "user"  # تم تثبيت الصلاحية على user فقط
 
