@@ -210,7 +210,7 @@ with tabs[0]:
             sender_list = "، ".join(senders)
             st.markdown(f"<p style='color:red; font-weight:bold;'>يوجد لديك دردشات لم تطلع عليها من ({sender_list})</p>", unsafe_allow_html=True)
     else:
-        st.warning("⚠️ لا يوجد لديك دردشات. تأكد من الضغط على أيقونة جلب المعلومات من قاعدة البيانات دائماً.")
+        st.warning("⚠️ تأكد من الضغط على أيقونة جلب المعلومات من قاعدة البيانات دائماً.")
 
     # واجهة اختيار الفترة الزمنية
     st.markdown("### تحديد الفترة الزمنية للتقرير")
@@ -220,7 +220,7 @@ with tabs[0]:
     with col_date2:
         end_date = st.date_input("إلى تاريخ", value=datetime.today().date(), key="end_date_tab0")
 
-    # تصفية البيانات باستخدام الفترة الزمنية
+    # تصفية البيانات باستخدام الفترة الزمنية المحددة
     df_filtered = merged_df.copy()
     if "التاريخ" in df_filtered.columns:
         df_filtered["التاريخ"] = pd.to_datetime(df_filtered["التاريخ"], errors="coerce")
@@ -242,7 +242,7 @@ with tabs[0]:
     grouped["المجموع"] = grouped.sum(axis=1, numeric_only=True)
     grouped = grouped.sort_values(by="المجموع", ascending=True)
 
-    # عرض النتيجة مع الحصول على الاسم الكامل للعرض النهائي
+    # عرض النتائج باستخدام full_name للعرض النهائي
     for user, row in grouped.iterrows():
         full_name = users_df.loc[users_df["username"] == user, "full_name"].values[0]
         st.markdown(f"### <span style='color: #006400;'>{full_name} : {row['المجموع']} درجة</span>", unsafe_allow_html=True)
