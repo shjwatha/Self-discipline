@@ -64,29 +64,15 @@ st.markdown(
 st.title(f"👋 أهلاً {st.session_state.get('full_name')}")
 
 # ===== تحديد المستخدمين المتاحين للمحادثة =====
-
-
 all_user_options = []
 
 if permissions == "sp":
-    # جلب المشرفين المباشرين التابعين للسوبر مشرف
     my_supervisors = users_df[(users_df["role"] == "supervisor") & (users_df["Mentor"] == username)]["username"].tolist()
     all_user_options += [(s, "مشرف") for s in my_supervisors]
-    
-    # جلب المستخدمين المباشرين للمستخدم (السوبر مشرف) وأيضاً المستخدمين التابعين للمشرفين الذين تم جلبهم
-    assigned_users = users_df[
-        (users_df["role"] == "user") & (users_df["Mentor"].isin([username] + my_supervisors))
-    ]
+
+if permissions in ["supervisor", "sp"]:
+    assigned_users = users_df[(users_df["role"] == "user") & (users_df["Mentor"].isin([username] + [s for s, _ in all_user_options]))]
     all_user_options += [(u, "مستخدم") for u in assigned_users["username"].tolist()]
-
-elif permissions == "supervisor":
-    # في حالة المشرف، جلب المستخدمين المباشرين فقط
-    assigned_users = users_df[
-        (users_df["role"] == "user") & (users_df["Mentor"] == username)
-    ]
-    all_user_options += [(u, "مستخدم") for u in assigned_users["username"].tolist()]
-
-
 
 # إضافة سوبر مشرفين (إن وُجدوا) إلى القائمة للدردشة معهم
 # ===== تحميل بيانات الطلاب لعرض التقارير =====
@@ -117,18 +103,9 @@ for _, user in filtered_users.iterrows():
     except Exception as e:
         st.warning(f"⚠️ خطأ في تحميل بيانات {user_name}: {e}")
 
-
-
-# بعد جمع البيانات من أوراق بيانات المستخدمين
 if not all_data:
-    st.info("ℹ️ لا توجد بيانات متوفرة حالياً. سيتم عرض التبويبات بدون بيانات.")
-    # إنشاء DataFrame فارغ للسماح باستمرار عرض التبويبات
-    merged_df = pd.DataFrame()
-else:
-    merged_df = pd.concat(all_data, ignore_index=True)
-
-
-
+    st.info("ℹ️ لا توجد بيانات.")
+    st.stop()
 
 merged_df = pd.concat(all_data, ignore_index=True)
 
