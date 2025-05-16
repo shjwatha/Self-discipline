@@ -196,7 +196,7 @@ def show_chat_supervisor():
 
 # ===== تبويب 1: تقرير إجمالي =====
 with tabs[0]:
-    # تنبيه بالرسائل غير المقروءة
+    # تنبيه الرسائل غير المقروءة
     chat_data = pd.DataFrame(chat_sheet.get_all_records())
     required_columns = ["to", "message", "read_by_receiver", "from"]
     if all(col in chat_data.columns for col in required_columns):
@@ -208,7 +208,10 @@ with tabs[0]:
         senders = unread_msgs["from"].unique().tolist()
         if senders:
             sender_list = "، ".join(senders)
-            st.markdown(f"<p style='color:red; font-weight:bold;'>يوجد لديك دردشات لم تطلع عليها من ({sender_list})</p>", unsafe_allow_html=True)
+            st.markdown(
+                f"<p style='color:red; font-weight:bold;'>يوجد لديك دردشات لم تطلع عليها من ({sender_list})</p>",
+                unsafe_allow_html=True
+            )
     else:
         st.warning("⚠️ تأكد من الضغط على أيقونة جلب المعلومات من قاعدة البيانات دائماً.")
 
@@ -245,7 +248,10 @@ with tabs[0]:
     # عرض النتائج باستخدام full_name للعرض النهائي
     for user, row in grouped.iterrows():
         full_name = users_df.loc[users_df["username"] == user, "full_name"].values[0]
-        st.markdown(f"### <span style='color: #006400;'>{full_name} : {row['المجموع']} درجة</span>", unsafe_allow_html=True)
+        st.markdown(
+            f"### <span style='color: #006400;'>{full_name} : {row['المجموع']} درجة</span>",
+            unsafe_allow_html=True
+        )
 
 # ===== تبويب 2: المحادثات =====
 with tabs[1]:
