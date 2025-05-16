@@ -67,19 +67,20 @@ def get_default_columns():
 # قراءة المشرفين فقط
 supervisors_df = users_df[users_df["role"] == "supervisor"]
 
+
 # ===== إنشاء مستخدم جديد =====
 st.subheader("➕ إنشاء حساب جديد")
 with st.form("create_user_form"):
     full_name = st.text_input("الاسم الكامل")  # رفع الاسم الكامل أولًا
-    username = st.text_input("Username")  # ثم اسم المستخدم
-    password = st.text_input("Password")
+    username = st.text_input("اسم المستخدم")  # ثم اسم المستخدم
+    password = st.text_input("كلمة المرور")
     role = "user"  # تم تثبيت الصلاحية على user فقط
 
     # اختيار المشرف من قائمة المشرفين فقط (عرض الاسم الكامل)
     mentor_options = supervisors_df["username"].tolist()  # عرض الاسم الكامل للمشرفين
     mentor = st.selectbox("اختار المشرف", mentor_options)  # اختيار المشرف حسب الاسم الكامل
 
-    create = st.form_submit_button("Create")
+    create = st.form_submit_button("إنشاء")
 
     if create:
         if not username or not password or not mentor or not full_name:
@@ -96,6 +97,11 @@ with st.form("create_user_form"):
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ حدث خطأ أثناء إنشاء المستخدم: {e}")
+
+
+
+
+
 
 # ===== عرض المستخدمين =====
 st.subheader("📋 قائمة المستخدمين")
