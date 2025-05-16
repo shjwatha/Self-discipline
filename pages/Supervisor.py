@@ -117,9 +117,14 @@ for _, user in filtered_users.iterrows():
     except Exception as e:
         st.warning(f"⚠️ خطأ في تحميل بيانات {user_name}: {e}")
 
+
+
 if not all_data:
-    st.info("ℹ️ لا توجد بيانات.")
-    st.stop()
+    st.info("ℹ️ لا توجد بيانات حالياً. سيتم عرض التبويبات بدون بيانات، يمكنك محاولة جلب المعلومات من قاعدة البيانات.")
+    merged_df = pd.DataFrame()  # إنشاء DataFrame فارغ للسماح باستمرار عرض التبويبات
+
+
+
 
 merged_df = pd.concat(all_data, ignore_index=True)
 
