@@ -242,7 +242,11 @@ with tabs[0]:
             rating = st.radio(col, options_1, index=0, key=col)
             values.append(str(ratings_1[rating]))
         
-        # الاختيارات الثانية
+        
+
+
+
+# الاختيارات الثانية (مع مربعات اختيار متعددة)
         st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثانية</h3>", unsafe_allow_html=True)
         options_2 = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"]
         ratings_2 = {
@@ -252,6 +256,25 @@ with tabs[0]:
             "المغرب": 1,
             "العشاء": 1
         }
+        
+        # جمع الدرجات
+        total_rating = 0  # لتخزين إجمالي الدرجات
+        selected_options = []  # لتخزين الخيارات المحددة من قبل المستخدم
+        
+        # عرض مربعات الاختيار (checkboxes) لكل خيار
+        for option in options_2:
+            if st.checkbox(option, key=option):  # إذا تم اختيار المربع
+                selected_options.append(option)  # إضافة الخيار إلى القائمة
+                total_rating += ratings_2[option]  # جمع الدرجة (1 لكل خيار)
+        
+        # عرض الدرجات النهائية
+        st.write(f"إجمالي الدرجات: {total_rating}")
+        st.write(f"الخيارات المحددة: {', '.join(selected_options)}") 
+        
+
+
+
+
         
         for i, col in enumerate(columns[6:7]):  # العمود السادس فقط
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
