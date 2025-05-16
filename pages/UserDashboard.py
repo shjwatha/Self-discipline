@@ -222,11 +222,7 @@ with tabs[0]:
 
         values = [selected_date.strftime("%Y-%m-%d")]
 
-
-
-
-
-# الاختيارات الأولى
+        # الاختيارات الأولى
         st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الأولى</h3>", unsafe_allow_html=True)
         options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
         ratings_1 = {
@@ -236,115 +232,41 @@ with tabs[0]:
             "في المنزل منفرد": 2,
             "خارج الوقت": 0
         }
-        
+
         for i, col in enumerate(columns[1:6]):
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
             rating = st.radio(col, options_1, index=0, key=col)
             values.append(str(ratings_1[rating]))
-        
-        
 
-
-
-
-
-
- # الاختيارات الثانية (مع مربعات اختيار متعددة)
+        # الاختيارات الثانية
         st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثانية</h3>", unsafe_allow_html=True)
-        
-        # قائمة الخيارات
-        options_2 = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"]
-        
-        # درجات كل خيار
+        options_2 = ["نعم", "ليس كاملاً", "لا"]
         ratings_2 = {
-            "الفجر": 1,
-            "الظهر": 1,
-            "العصر": 1,
-            "المغرب": 1,
-            "العشاء": 1
+            "نعم": 5,
+            "ليس كاملاً": 3,
+            "لا": 0
         }
-        
-        # قائمة لتخزين البند (الاختيارات) التي تم تحديدها
-        selected_options = []  
-        
-        # جمع الدرجات لكل خيار تم اختياره
-        for option in options_2:
-            if st.checkbox(option, key=option):  # إذا تم اختيار المربع
-                selected_options.append(option)  # إضافة الخيار إلى القائمة
-        
-        # إرسال الدرجات إلى Google Sheets
-        if selected_options:
-            for option in selected_options:
-                # هنا يتم إضافة البند إلى Google Sheets مع درجته
-                # يمكنك إرسال البيانات إلى ورقة العمل المناسبة في Google Sheets هنا
-                # مثال على طريقة الإضافة:
-                worksheet.append_row([datetime.today().date(), option, ratings_2[option]])
-                
-            st.success("✅ تم إرسال الدرجات بنجاح.")
-        else:
-            st.warning("⚠️ لم يتم اختيار أي بند.")
-                
 
+        for i, col in enumerate(columns[6:11]):
+            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
+            rating = st.radio(col, options_2, index=0, key=col)
+            values.append(str(ratings_2[rating]))
 
-
-
-
-        
-        # الاختيارات الثالثة
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الثالثة</h3>", unsafe_allow_html=True)
-        options_3 = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
+        # الاختيارات الأخيرة
+        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الأخيرة</h3>", unsafe_allow_html=True)
+        options_3 = ["نعم", "لا"]
         ratings_3 = {
-            "قرأته لفترتين": 2,
-            "قرأته مرة واحدة في اليوم": 1,
-            "لم أتمكن من قراءته لهذا اليوم": 0
+            "نعم": 3,
+            "لا": 0
         }
-        
-        for i, col in enumerate(columns[7:9]):  # العمود السابع والثامن فقط
+
+        for i, col in enumerate(columns[11:]):
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
             rating = st.radio(col, options_3, index=0, key=col)
             values.append(str(ratings_3[rating]))
-        
-        # الاختيارات الرابعة (من العمود 9 إلى 14)
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الرابعة</h3>", unsafe_allow_html=True)
-        options_4 = ["نعم", "لا"]
-        ratings_4 = {
-            "نعم": 2,
-            "لا": 0
-        }
-        
-        for i, col in enumerate(columns[9:15]):  # من العمود التاسع إلى الرابع عشر
-            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-            rating = st.radio(col, options_4, index=0, key=col)
-            values.append(str(ratings_4[rating]))
-        
-        # الاختيارات الأخيرة (لما يتبقى من الأعمدة)
-        options_5 = ["نعم", "لا"]
-        ratings_5 = {
-            "نعم": 1,
-            "لا": 0
-        }
-        
-        for i, col in enumerate(columns[15:]):  # الأعمدة المتبقية
-            st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-            rating = st.radio(col, options_5, index=0, key=col)
-            values.append(str(ratings_5[rating]))
-        
+
         # زر الإرسال
         submit = st.form_submit_button("💾 حفظ")
-                
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         if submit:
             if selected_date not in [d for _, d in hijri_dates]:
