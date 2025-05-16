@@ -75,12 +75,6 @@ def load_data():
     df = pd.DataFrame(data)
     return df
 
-
-
-merged_df["full_name"] = merged_df["username"].map(lambda x: users_df.get(users_df["username"] == x, {}).get("full_name", "غير موجود"))
-
-
-
 # ===== دالة عرض المحادثة =====
 
 def show_chat():
@@ -168,8 +162,7 @@ with tabs[0]:
     )
 
     # تصغير "أهلاً ... مجموعتك"
-    st.markdown(f"<h3 style='color: #0000FF; font-weight: bold; font-size: 24px;'>👋 أهلاً {full_name} | مجموعتك / {mentor_name}</h3>", unsafe_allow_html=True)
->", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #0000FF; font-weight: bold; font-size: 24px;'>👋 أهلاً {username} | مجموعتك / {mentor_name}</h3>", unsafe_allow_html=True)
 
     # تصغير "المحاسبة الذاتية"
     st.markdown("<h4 style='color: #0000FF; font-weight: bold; font-size: 20px;'>📝 المحاسبة الذاتية</h4>", unsafe_allow_html=True)
