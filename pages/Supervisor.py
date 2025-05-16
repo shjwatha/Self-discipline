@@ -119,9 +119,13 @@ for _, user in filtered_users.iterrows():
 
 
 
+# بعد جمع البيانات من أوراق بيانات المستخدمين
 if not all_data:
-    st.info("ℹ️ لا توجد بيانات حالياً. سيتم عرض التبويبات بدون بيانات، يمكنك محاولة جلب المعلومات من قاعدة البيانات.")
-    merged_df = pd.DataFrame()  # إنشاء DataFrame فارغ للسماح باستمرار عرض التبويبات
+    st.info("ℹ️ لا توجد بيانات متوفرة حالياً. سيتم عرض التبويبات بدون بيانات.")
+    # إنشاء DataFrame فارغ للسماح باستمرار عرض التبويبات
+    merged_df = pd.DataFrame()
+else:
+    merged_df = pd.concat(all_data, ignore_index=True)
 
 
 
