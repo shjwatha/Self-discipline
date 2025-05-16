@@ -79,8 +79,22 @@ if permissions in ["supervisor", "sp"]:
 if permissions == "supervisor":
     filtered_users = users_df[(users_df["role"] == "user") & (users_df["Mentor"] == username)]
 elif permissions == "sp":
+
+
+
+    # تصفية المشرفين تحت إشراف السوبر مشرف
     supervised_supervisors = users_df[(users_df["role"] == "supervisor") & (users_df["Mentor"] == username)]["username"].tolist()
+    print(f"مشرفين تحت إشراف السوبر مشرف: {supervised_supervisors}")  # طباعة للمساعدة في التشخيص
+
+# تصفية المستخدمين الذين تحت إشراف المشرفين
     filtered_users = users_df[(users_df["role"] == "user") & (users_df["Mentor"].isin(supervised_supervisors))]
+    print(f"المستخدمين الذين تحت إشراف المشرفين: {filtered_users['username'].tolist()}")  # طباعة للمساعدة في التشخيص
+
+
+
+
+
+
 else:
     filtered_users = pd.DataFrame()
 
