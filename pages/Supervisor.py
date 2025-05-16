@@ -268,12 +268,21 @@ with tabs[0]:
     # التجميع بناءً على username
     scores = df_filtered.drop(columns=["التاريخ", "username"], errors="ignore")
 
-# تحقق من وجود العمود "username" في الـ DataFrame
-    if "username" in df_filtered.columns:
-        grouped = df_filtered.groupby("username")[scores.columns].sum()
-    else:
+
+
+# تحقق من أن العمود "username" موجود
+    if "username" not in df_filtered.columns:
         st.error("⚠️ العمود 'username' غير موجود في البيانات.")
         grouped = pd.DataFrame()  # إذا لم يكن العمود موجودًا، نعيد DataFrame فارغ
+    else:
+    # تحقق من أن الأعمدة في scores.columns موجودة في df_filtered
+        missing_columns = [col for col in scores.columns if col not in df_filtered.columns]
+        if missing_columns:
+            st.error(f"⚠️ الأعمدة المفقودة: {', '.join(missing_columns)}")
+            grouped = pd.DataFrame()  # إعادة DataFrame فارغ في حال كان هناك أعمدة مفقودة
+        else:
+            # تنفيذ عملية groupby إذا كانت الأعمدة موجودة
+            grouped = df_filtered.groupby("username")[scores.columns].sum()
 
 
 
