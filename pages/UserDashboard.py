@@ -267,12 +267,6 @@ with tabs[0]:
                 selected_options.append(option)  # إضافة الخيار إلى القائمة
                 total_rating += ratings_2[option]  # جمع الدرجة (1 لكل خيار)
         
-        # عرض الدرجات النهائية
-        st.write(f"إجمالي الدرجات: {total_rating}")
-        st.write(f"الخيارات المحددة: {', '.join(selected_options)}") 
-        
-
-
 
 
         
