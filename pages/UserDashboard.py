@@ -270,7 +270,7 @@ with tabs[0]:
 
         yes_no_options = ["نعم", "لا"]
         ratings_yes2 = {"نعم": 2, "لا": 0}
-        for col_name in columns[9:15]:
+        for col_name in columns[9:13]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
             rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
             values.append(str(ratings_yes2[rating]))
@@ -279,9 +279,9 @@ with tabs[0]:
         ratings_yes1 = {"نعم": 1, "لا": 0}
         
         # باقي الأعمدة إذا وُجدت: إجابتان نعم أو لا (نعم = 1 درجة، لا = 0)
-        if len(columns) > 15:
+        if len(columns) > 13:
 
-            remaining_columns = columns[15:]
+            remaining_columns = columns[13:]
             for col_name in remaining_columns:
                 st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
                 rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
