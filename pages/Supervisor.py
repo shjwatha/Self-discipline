@@ -194,6 +194,20 @@ with tabs[0]:
     # === تنبيه بالرسائل غير المقروءة ===
     chat_data = pd.DataFrame(chat_sheet.get_all_records())
     
+    # === التقويم لتصفية البيانات حسب التاريخ ===
+    from datetime import datetime, timedelta
+
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input("من تاريخ", datetime.today().date() - timedelta(days=7), key="start_date_0")
+    with col2:
+        end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_0")
+
+    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+
+
+
+
     # تحقق من وجود الأعمدة المطلوبة
     required_columns = ["to", "message", "read_by_receiver", "from"]
     if all(col in chat_data.columns for col in required_columns):
@@ -232,14 +246,33 @@ with tabs[1]:
 
 # ===== تبويب 3: تجميعي الكل =====
 with tabs[2]:
+    # === التقويم لتصفية البيانات حسب التاريخ ===
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input("من تاريخ", datetime.today().date() - timedelta(days=7), key="start_date_2")
+    with col2:
+        end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_2")
+
+    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+
     st.subheader("📋 تفاصيل الدرجات للجميع")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_3"):
         st.cache_data.clear()
         st.rerun()
     st.dataframe(grouped, use_container_width=True)
 
+
 # ===== تبويب 4: تجميعي بند =====
 with tabs[3]:
+    # === التقويم لتصفية البيانات حسب التاريخ ===
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input("من تاريخ", datetime.today().date() - timedelta(days=7), key="start_date_3")
+    with col2:
+        end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_3")
+
+    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+
     st.subheader("📌 مجموع بند لمستخدم")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_4"):
         st.cache_data.clear()
@@ -254,6 +287,15 @@ with tabs[3]:
 
 # ===== تبويب 5: تقرير فردي =====
 with tabs[4]:
+    # === التقويم لتصفية البيانات حسب التاريخ ===
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input("من تاريخ", datetime.today().date() - timedelta(days=7), key="start_date_4")
+    with col2:
+        end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_4")
+
+    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+
     st.subheader(" تقرير تفصيلي لمستخدم")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_5"):
         st.cache_data.clear()
@@ -264,6 +306,15 @@ with tabs[4]:
 
 # ===== تبويب 6: رسوم بيانية =====
 with tabs[5]:
+    # === التقويم لتصفية البيانات حسب التاريخ ===
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input("من تاريخ", datetime.today().date() - timedelta(days=7), key="start_date_5")
+    with col2:
+        end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_5")
+
+    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+
     st.subheader("📈 رسوم بيانية")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_6"):
         st.cache_data.clear()
