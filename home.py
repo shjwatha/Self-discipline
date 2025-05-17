@@ -53,7 +53,7 @@ if not st.session_state["authenticated"]:
             if not matched.empty:
                 user_row = matched.iloc[0]
                 st.session_state["authenticated"] = True
-                st.session_state["username"] = username
+                st.session_state["username"] = user_row["username"]
                 st.session_state["sheet_url"] = user_row["sheet_name"]
                 st.session_state["permissions"] = user_row["role"]
                 st.success("✅ تم تسجيل الدخول")
