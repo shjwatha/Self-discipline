@@ -223,12 +223,12 @@ with tabs[0]:
 
         values = [selected_date.strftime("%Y-%m-%d")]
 
-
-
-
 def highlight_score(text):
-            import re
-            return re.sub(r'(\d+)\s*نقطة', r"<span style='color:red;font-weight:bold;'>\1</span> نقطة", text)
+    import re
+    return re.sub(r'(\d+)\s*نقطة', r"<span style='color:red;font-weight:bold;'>\1</span> نقطة", text)
+
+
+
         
         # === 1-5: خيارات الصلاة بالنقاط ===
         options_1_raw = [
