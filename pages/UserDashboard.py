@@ -220,8 +220,13 @@ with tabs[0]:
         hijri_labels = [label for label, _ in hijri_dates]
         selected_label = st.selectbox("📅 اختر التاريخ (هجري)", hijri_labels)
         selected_date = dict(hijri_dates)[selected_label]  # هذا هو التاريخ الميلادي المطابق
- values = [selected_date.strftime("%Y-%m-%d")]
-        
+
+        values = [selected_date.strftime("%Y-%m-%d")]
+
+
+
+
+
         options_1 = ["في المسجد جماعة = 5 نقاط", "في المنزل جماعة = 4 نقاط", "في المسجد منفرد = 4 نقاط", "في المنزل منفرد = 3 نقاط", "خارج الوقت = 0 نقاط"]
         ratings_1 = {
             "في المسجد جماعة = 5 نقاط": 5,
@@ -233,9 +238,10 @@ with tabs[0]:
         
         for col in columns[1:6]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-            rating = st.radio("", options_1, index=0, key=col)  # حذف العنوان من الراديو
+            rating = st.radio(col, options_1, index=0, key=col)
             values.append(str(ratings_1[rating]))
-                
+        
+
 
         checkbox_options = ["الفجر = 1 نقطة", "الظهر القبلية = 1 نقطة", "العصر القبلية = 1 نقطة", "المغرب = 1 نقطة", "العشاء = 1 نقطة"]
         st.markdown(f"<h4 style='font-weight: bold;'>{columns[6]}</h4>", unsafe_allow_html=True)
