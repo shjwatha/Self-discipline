@@ -260,7 +260,7 @@ with tabs[0]:
         ratings_read = {"قرأته لفترتين": 2, "قرأته مرة واحدة في اليوم": 1, "لم أتمكن من قراءته لهذا اليوم": 0}
         for col_name in columns[7:9]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            rating = st.radio("", time_read_options, horizontal=True, key=col_name)
+            rating = st.radio("", time_read_options, key=col_name)  # أزلنا horizontal=True
             values.append(str(ratings_read[rating]))
         
         # الأعمدة من 9 إلى 14: إجابتان نعم أو لا (إذا كانت الإجابة نعم تعطي 2 درجة، ولا تعطي 0)
