@@ -243,7 +243,7 @@ with tabs[0]:
         
 
 
-        checkbox_options = ["الفجر = 1", "الظهر القبلية = 1", "العصر القبلية = 1", "المغرب = 1", "العشاء = 1"]
+        checkbox_options = ["الفجر = 1 نقطة", "الظهر القبلية = 1 نقطة", "العصر القبلية = 1 نقطة", "المغرب = 1 نقطة", "العشاء = 1 نقطة"]
         st.markdown(f"<h4 style='font-weight: bold;'>{columns[6]}</h4>", unsafe_allow_html=True)
         
 
@@ -267,15 +267,15 @@ with tabs[0]:
         
 
 
-        yes_no_options = ["نعم = 2 نقطة", "لا = 0 نقطة"]
-        ratings_yes2 = {"نعم = 2 نقطة": 2, "لا = 0 نقطة": 0}
+        yes_no_options = ["نعم", "لا"]
+        ratings_yes2 = {"نعم =": 2, "لا": 0}
         for col_name in columns[9:15]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
             rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
             values.append(str(ratings_yes2[rating]))
         
         # تعريف ratings_yes1 قبل استخدامها
-        ratings_yes1 = {"نعم = 1 نقطة": 1, "لا = 0 نقطة": 0}
+        ratings_yes1 = {"نعم": 1, "لا": 0}
         
         # باقي الأعمدة إذا وُجدت: إجابتان نعم أو لا (نعم = 1 درجة، لا = 0)
         if len(columns) > 15:
