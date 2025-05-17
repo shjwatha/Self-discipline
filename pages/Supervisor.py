@@ -227,8 +227,8 @@ with tabs[0]:
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_2"):
         st.cache_data.clear()
         st.rerun()
-    scores = merged_df.drop(columns=["التاريخ", "username"], errors="ignore")
-    grouped = merged_df.groupby("username")[scores.columns].sum()
+    scores = filtered_df.drop(columns=["التاريخ", "username"], errors="ignore")
+    grouped = filtered_df.groupby("username")[scores.columns].sum()
     grouped["المجموع"] = grouped.sum(axis=1)
     grouped = grouped.sort_values(by="المجموع", ascending=True)
     for user, row in grouped.iterrows():
@@ -255,12 +255,14 @@ with tabs[2]:
 
     filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
 
+    scores = filtered_df.drop(columns=["التاريخ", "username"], errors="ignore")
+    grouped = filtered_df.groupby("username")[scores.columns].sum()
+
     st.subheader("📋 تفاصيل الدرجات للجميع")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_3"):
         st.cache_data.clear()
         st.rerun()
     st.dataframe(grouped, use_container_width=True)
-
 
 # ===== تبويب 4: تجميعي بند =====
 with tabs[3]:
@@ -277,9 +279,9 @@ with tabs[3]:
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_4"):
         st.cache_data.clear()
         st.rerun()
-    all_columns = [col for col in merged_df.columns if col not in ["التاريخ", "username"]]
+    all_columns = [col for col in filtered_df.columns if col not in ["التاريخ", "username"]]
     selected_activity = st.selectbox("اختر البند", all_columns)
-    activity_sum = merged_df.groupby("username")[selected_activity].sum().sort_values(ascending=True)
+    activity_sum = filtered_df.groupby("username")[selected_activity].sum().sort_values(ascending=True)
     missing_users = set(all_usernames) - set(users_with_data)
     for user in missing_users:
         activity_sum[user] = 0
@@ -300,8 +302,8 @@ with tabs[4]:
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_5"):
         st.cache_data.clear()
         st.rerun()
-    selected_user = st.selectbox("اختر المستخدم", merged_df["username"].unique())
-    user_df = merged_df[merged_df["username"] == selected_user].sort_values("التاريخ")
+    selected_user = st.selectbox("اختر المستخدم", filtered_df["username"].unique())
+    user_df = filtered_df[filtered_df["username"] == selected_user].sort_values("التاريخ")
     st.dataframe(user_df.reset_index(drop=True), use_container_width=True)
 
 # ===== تبويب 6: رسوم بيانية =====
@@ -319,8 +321,8 @@ with tabs[5]:
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_6"):
         st.cache_data.clear()
         st.rerun()
-    scores = merged_df.drop(columns=["التاريخ", "username"], errors="ignore")
-    grouped = merged_df.groupby("username")[scores.columns].sum()
+    scores = filtered_df.drop(columns=["التاريخ", "username"], errors="ignore")
+    grouped = filtered_df.groupby("username")[scores.columns].sum()
     grouped["المجموع"] = grouped.sum(axis=1)
     fig = go.Figure(go.Pie(
         labels=grouped.index,
