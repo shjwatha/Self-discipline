@@ -265,27 +265,27 @@ with tabs[0]:
             rating = st.radio("", time_read_options, key=col_name)  # أزلنا horizontal=True
             values.append(str(ratings_read[rating]))
         
-
-
-
-        yes_no_options = ["نعم", "لا"]
-        ratings_yes2 = {"نعم": 2, "لا": 0}
+# المجموعة الأولى: نعم = 2 نقطة، لا = 0 نقطة
+        yes_no_options_2pts = ["نعم = 2 نقطة", "لا = 0 نقطة"]
+        ratings_yes2 = {"نعم = 2 نقطة": 2, "لا = 0 نقطة": 0}
+        
         for col_name in columns[9:13]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
+            rating = st.radio("", yes_no_options_2pts, horizontal=True, key=col_name)
             values.append(str(ratings_yes2[rating]))
         
-        # تعريف ratings_yes1 قبل استخدامها
-        ratings_yes1 = {"نعم": 1, "لا": 0}
+        # المجموعة الثانية: نعم = 1 نقطة، لا = 0 نقطة
+        yes_no_options_1pt = ["نعم = 1 نقطة", "لا = 0 نقطة"]
+        ratings_yes1 = {"نعم = 1 نقطة": 1, "لا = 0 نقطة": 0}
         
-        # باقي الأعمدة إذا وُجدت: إجابتان نعم أو لا (نعم = 1 درجة، لا = 0)
+        # باقي الأعمدة إذا وُجدت
         if len(columns) > 13:
-
             remaining_columns = columns[13:]
             for col_name in remaining_columns:
                 st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-                rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
-                values.append(str(ratings_yes1[rating]))  # الآن تستخدم ratings_yes1 بشكل صحيح
+                rating = st.radio("", yes_no_options_1pt, horizontal=True, key=col_name)
+                values.append(str(ratings_yes1[rating])) 
+        
         
         # زر الإرسال والحفظ
         submit = st.form_submit_button("💾 حفظ")
