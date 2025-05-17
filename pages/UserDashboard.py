@@ -211,7 +211,9 @@ with tabs[0]:
                 "Thursday": "الخميس",
                 "Friday": "الجمعة"
             }[weekday]
-            hijri_label = f"{arabic_weekday} - {h_date.day}/{h_date.month}/{h_date.year} هـ"
+            g_date_str = f"{g_date.day}/{g_date.month}/{g_date.year}"
+            hijri_label = f"{arabic_weekday} - {g_date_str}"
+
             hijri_dates.append((hijri_label, g_date))
 
         # إنشاء قائمة اختيار من التواريخ الهجرية
