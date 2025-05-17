@@ -268,8 +268,8 @@ with tabs[2]:
     grouped = filtered_df.groupby("username")[scores.columns].sum()
     grouped = grouped.reindex(all_usernames, fill_value=0)  # ✅ لإظهار كل المستخدمين
 
-    # عكس ترتيب الأعمدة
-    grouped = grouped.iloc[:, ::-1]  # عكس ترتيب الأعمدة في الجدول
+    # عكس ترتيب الأعمدة مع الحفاظ على عمود 'username' في البداية
+    grouped = grouped[['username'] + [col for col in grouped.columns if col != 'username']]
 
     st.subheader("📋 تفاصيل الدرجات للجميع")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_3"):
