@@ -223,18 +223,11 @@ with tabs[0]:
 
         values = [selected_date.strftime("%Y-%m-%d")]
 
-def highlight_score(text):
-    import re
-    return re.sub(r'(\d+)\s*نقطة', r"<span style='color:red;font-weight:bold;'>\1</span> نقطة", text)
 
 
 
-        
-        # === 1-5: خيارات الصلاة بالنقاط ===
-        options_1_raw = [
-            "في المسجد جماعة 5 نقطة", "في المنزل جماعة 4 نقطة", "في المسجد منفرد 4 نقطة",
-            "في المنزل منفرد 3 نقطة", "خارج الوقت 0 نقطة"
-        ]
+
+        options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
         ratings_1 = {
             "في المسجد جماعة": 5,
             "في المنزل جماعة": 4,
@@ -245,79 +238,54 @@ def highlight_score(text):
         
         for col in columns[1:6]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-            display_options = [highlight_score(opt) for opt in options_1_raw]
-            actual_keys = [opt.rsplit(" ", 1)[0] for opt in options_1_raw]
-            selected_index = st.radio(
-                label="", options=list(range(len(display_options))),
-                format_func=lambda i: display_options[i],
-                key=col
-            )
-            selected_key = actual_keys[selected_index]
-            values.append(str(ratings_1[selected_key]))
+            rating = st.radio(col, options_1, index=0, key=col)
+            values.append(str(ratings_1[rating]))
         
-        # === 6: الأذكار (Checkboxes) ===
-        checkbox_options_raw = [
-            "الفجر 1 نقطة", "الظهر القبلية 1 نقطة", "العصر القبلية 1 نقطة", "المغرب 1 نقطة", "العشاء 1 نقطة"
-        ]
+
+
+        checkbox_options = ["الفجر", "الظهر القبلية", "العصر القبلية", "المغرب", "العشاء"]
         st.markdown(f"<h4 style='font-weight: bold;'>{columns[6]}</h4>", unsafe_allow_html=True)
+        
+
         checkbox_cols = st.columns(1)
         selected_checkboxes = []
-        for option in checkbox_options_raw:
-            display_text = highlight_score(option)
+        for option in checkbox_options:
             with checkbox_cols[0]:
-                if st.checkbox(display_text, key=f"{columns[6]}_{option}", unsafe_allow_html=True):
+                if st.checkbox(option, key=f"{columns[6]}_{option}"):
                     selected_checkboxes.append(option)
-        score_checkbox = len(selected_checkboxes)
+        score_checkbox = len(selected_checkboxes)  # كل خيار مختار يعطي درجة واحدة
         values.append(str(score_checkbox))
         
-        # === 7-8: قراءة القرآن ===
-        read_options_raw = [
-            "قرأته لفترتين 4 نقطة", "قرأته مرة واحدة في اليوم 2 نقطة", "لم أتمكن من قراءته لهذا اليوم 0 نقطة"
-        ]
-        ratings_read = {
-            "قرأته لفترتين": 4,
-            "قرأته مرة واحدة في اليوم": 2,
-            "لم أتمكن من قراءته لهذا اليوم": 0
-        }
+
+
+        time_read_options = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
+        ratings_read = {"قرأته لفترتين": 4, "قرأته مرة واحدة في اليوم": 2, "لم أتمكن من قراءته لهذا اليوم": 0}
         for col_name in columns[7:9]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            display_options = [highlight_score(opt) for opt in read_options_raw]
-            actual_keys = [opt.rsplit(" ", 1)[0] for opt in read_options_raw]
-            selected_index = st.radio("", list(range(len(display_options))), format_func=lambda i: display_options[i], key=col_name)
-            selected_key = actual_keys[selected_index]
-            values.append(str(ratings_read[selected_key]))
+            rating = st.radio("", time_read_options, key=col_name)  # أزلنا horizontal=True
+            values.append(str(ratings_read[rating]))
         
-        # === 9-14: نعم/لا (2 نقاط) ===
-        yes_no_options_raw = ["نعم 2 نقطة", "لا 0 نقطة"]
+
+
+        yes_no_options = ["نعم", "لا"]
         ratings_yes2 = {"نعم": 2, "لا": 0}
         for col_name in columns[9:15]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            display_options = [highlight_score(opt) for opt in yes_no_options_raw]
-            actual_keys = [opt.split(" ")[0] for opt in yes_no_options_raw]
-            selected_index = st.radio("", list(range(len(display_options))), format_func=lambda i: display_options[i], key=col_name, horizontal=True)
-            selected_key = actual_keys[selected_index]
-            values.append(str(ratings_yes2[selected_key]))
+            rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
+            values.append(str(ratings_yes2[rating]))
         
-        # === باقي البنود (نعم/لا بنقطة واحدة) ===
+        # تعريف ratings_yes1 قبل استخدامها
         ratings_yes1 = {"نعم": 1, "لا": 0}
-        yes_no_options1_raw = ["نعم 1 نقطة", "لا 0 نقطة"]
-        if len(columns) > 15:
-            for col_name in columns[15:]:
-                st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-                display_options = [highlight_score(opt) for opt in yes_no_options1_raw]
-                actual_keys = [opt.split(" ")[0] for opt in yes_no_options1_raw]
-                selected_index = st.radio("", list(range(len(display_options))), format_func=lambda i: display_options[i], key=col_name, horizontal=True)
-                selected_key = actual_keys[selected_index]
-                values.append(str(ratings_yes1[selected_key])) 
         
+        # باقي الأعمدة إذا وُجدت: إجابتان نعم أو لا (نعم = 1 درجة، لا = 0)
+        if len(columns) > 15:
 
-
-
-
-
-
-
-
+            remaining_columns = columns[15:]
+            for col_name in remaining_columns:
+                st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
+                rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
+                values.append(str(ratings_yes1[rating]))  # الآن تستخدم ratings_yes1 بشكل صحيح
+        
         # زر الإرسال والحفظ
         submit = st.form_submit_button("💾 حفظ")
         
