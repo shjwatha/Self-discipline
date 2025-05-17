@@ -46,8 +46,10 @@ if not st.session_state["authenticated"]:
             
             # التحقق من وجود المستخدم وكلمة المرور
             matched = users_df[
-                (users_df["username"] == username) &
+                ((users_df["username"] == username) | (users_df["full_name"] == username)) &
                 (users_df["password"] == password)
+            ]
+
             ]
             if not matched.empty:
                 user_row = matched.iloc[0]
