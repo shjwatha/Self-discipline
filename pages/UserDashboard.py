@@ -223,9 +223,11 @@ with tabs[0]:
 
         values = [selected_date.strftime("%Y-%m-%d")]
 
-# ======= 1. خيارات الصلوات الخمسة الأولى =======
-        
-        options_1_raw = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
+
+
+
+
+        options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
         ratings_1 = {
             "في المسجد جماعة": 5,
             "في المنزل جماعة": 4,
@@ -233,81 +235,60 @@ with tabs[0]:
             "في المنزل منفرد": 3,
             "خارج الوقت": 0
         }
-        options_1 = [f"{opt}<span style='color:red;'> {ratings_1[opt]} نقاط</span>" for opt in options_1_raw]
         
         for col in columns[1:6]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
-            selected_option = st.radio(
-                "", options_1, index=0, key=col, format_func=lambda x: x, unsafe_allow_html=True
-            )
-            for opt in options_1_raw:
-                if opt in selected_option:
-                    values.append(str(ratings_1[opt]))
-                    break
+            rating = st.radio(col, options_1, index=0, key=col)
+            values.append(str(ratings_1[rating]))
         
-        # ======= 2. checkbox (السنن الرواتب) =======
-        
+
+
         checkbox_options = ["الفجر", "الظهر القبلية", "العصر القبلية", "المغرب", "العشاء"]
         st.markdown(f"<h4 style='font-weight: bold;'>{columns[6]}</h4>", unsafe_allow_html=True)
         
+
         checkbox_cols = st.columns(1)
         selected_checkboxes = []
         for option in checkbox_options:
             with checkbox_cols[0]:
-                label = f"{option}<span style='color:red;'> 1 نقطة</span>"
-                if st.checkbox(label, key=f"{columns[6]}_{option}"):
+                if st.checkbox(option, key=f"{columns[6]}_{option}"):
                     selected_checkboxes.append(option)
-        score_checkbox = len(selected_checkboxes)
+        score_checkbox = len(selected_checkboxes)  # كل خيار مختار يعطي درجة واحدة
         values.append(str(score_checkbox))
         
-        # ======= 3. تقييم القراءة =======
-        
-        time_read_options_raw = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
-        ratings_read = {
-            "قرأته لفترتين": 4,
-            "قرأته مرة واحدة في اليوم": 2,
-            "لم أتمكن من قراءته لهذا اليوم": 0
-        }
-        time_read_options = [f"{opt}<span style='color:red;'> {ratings_read[opt]} نقاط</span>" for opt in time_read_options_raw]
-        
+
+
+        time_read_options = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
+        ratings_read = {"قرأته لفترتين": 4, "قرأته مرة واحدة في اليوم": 2, "لم أتمكن من قراءته لهذا اليوم": 0}
         for col_name in columns[7:9]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            selected_option = st.radio("", time_read_options, key=col_name, format_func=lambda x: x, unsafe_allow_html=True)
-            for opt in time_read_options_raw:
-                if opt in selected_option:
-                    values.append(str(ratings_read[opt]))
-                    break
+            rating = st.radio("", time_read_options, key=col_name)  # أزلنا horizontal=True
+            values.append(str(ratings_read[rating]))
         
-        # ======= 4. نعم / لا (درجتين) =======
-        
-        yes_no_options_raw = ["نعم", "لا"]
+
+
+        yes_no_options = ["نعم", "لا"]
         ratings_yes2 = {"نعم": 2, "لا": 0}
-        yes_no_options_2 = [f"{opt}<span style='color:red;'> {ratings_yes2[opt]} نقاط</span>" for opt in yes_no_options_raw]
-        
         for col_name in columns[9:15]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            selected_option = st.radio("", yes_no_options_2, horizontal=True, key=col_name, format_func=lambda x: x, unsafe_allow_html=True)
-            for opt in yes_no_options_raw:
-                if opt in selected_option:
-                    values.append(str(ratings_yes2[opt]))
-                    break
+            rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
+            values.append(str(ratings_yes2[rating]))
         
-        # ======= 5. نعم / لا (درجة واحدة) =======
-        
+        # تعريف ratings_yes1 قبل استخدامها
         ratings_yes1 = {"نعم": 1, "لا": 0}
-        yes_no_options_1 = [f"{opt}<span style='color:red;'> {ratings_yes1[opt]} نقطة</span>" for opt in yes_no_options_raw]
         
+        # باقي الأعمدة إذا وُجدت: إجابتان نعم أو لا (نعم = 1 درجة، لا = 0)
         if len(columns) > 15:
+
             remaining_columns = columns[15:]
             for col_name in remaining_columns:
                 st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-                selected_option = st.radio("", yes_no_options_1, horizontal=True, key=col_name, format_func=lambda x: x, unsafe_allow_html=True)
-                for opt in yes_no_options_raw:
-                    if opt in selected_option:
-                        values.append(str(ratings_yes1[opt]))
-                        break 
+                rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
+                values.append(str(ratings_yes1[rating]))  # الآن تستخدم ratings_yes1 بشكل صحيح
         
-
+        # زر الإرسال والحفظ
+        submit = st.form_submit_button("💾 حفظ")
+        
         if submit:
             if selected_date not in [d for _, d in hijri_dates]:
                 st.error("❌ التاريخ غير صالح. لا يمكن حفظ البيانات لأكثر من أسبوع سابق فقط")
