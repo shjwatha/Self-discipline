@@ -82,13 +82,25 @@ with st.form("create_user_form"):
 
     create = st.form_submit_button("إنشاء")
 
-    if create:
+        if create:
         if not username or not password or not mentor or not full_name:
             st.warning("يرجى إدخال اسم المستخدم وكلمة المرور والاسم الكامل واختيار المشرف")
-        elif username in users_df["username"].values:
-            st.error("🚫 اسم المستخدم موجود مسبقًا")
+        elif username in users_df["username"].values or username in users_df["full_name"].values:
+            st.error("🚫 اسم المستخدم مستخدم مسبقًا كاسم مستخدم أو كاسم كامل")
+        elif full_name in users_df["full_name"].values or full_name in users_df["username"].values:
+            st.error("🚫 الاسم الكامل مستخدم مسبقًا كاسم كامل أو كاسم مستخدم")
         else:
             try:
+                worksheet_name = f"بيانات - {username}"
+                worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="30")
+                worksheet.insert_row(get_default_columns(), 1)
+                admin_sheet.append_row([full_name, username, password, worksheet_name, role, mentor])
+                st.success("✅ تم إنشاء المستخدم والورقة بنجاح")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ حدث خطأ أثناء إنشاء المستخدم: {e}")
+
+
                 worksheet_name = f"بيانات - {username}"
                 worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="30")
                 worksheet.insert_row(get_default_columns(), 1)
