@@ -203,10 +203,10 @@ with tabs[0]:
     with col2:
         end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_0")
 
-    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
-
-
-
+    filtered_df = merged_df[
+        (merged_df["التاريخ"] >= pd.to_datetime(start_date)) & 
+        (merged_df["التاريخ"] <= pd.to_datetime(end_date))
+    ]
 
     # تحقق من وجود الأعمدة المطلوبة
     required_columns = ["to", "message", "read_by_receiver", "from"]
@@ -219,7 +219,10 @@ with tabs[0]:
         senders = unread_msgs["from"].unique().tolist()
         if senders:
             sender_list = "، ".join(senders)
-            st.markdown(f"<p style='color:red; font-weight:bold;'>يوجد لديك عدد دردشات لم تطلع عليها من ({sender_list})</p>", unsafe_allow_html=True)
+            st.markdown(
+                f"<p style='color:red; font-weight:bold;'>يوجد لديك عدد دردشات لم تطلع عليها من ({sender_list})</p>",
+                unsafe_allow_html=True
+            )
     else:
         st.warning("⚠️ لا يوجد لديك دردشات تأكد يجب الضغط على أيقونة جلب المعلومات من قاعدة البيانات دائما'.")
 
@@ -227,10 +230,13 @@ with tabs[0]:
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_2"):
         st.cache_data.clear()
         st.rerun()
+
     scores = filtered_df.drop(columns=["التاريخ", "username"], errors="ignore")
     grouped = filtered_df.groupby("username")[scores.columns].sum()
+    grouped = grouped.reindex(all_usernames, fill_value=0)  # ✅ ضمان ظهور كل المستخدمين
     grouped["المجموع"] = grouped.sum(axis=1)
     grouped = grouped.sort_values(by="المجموع", ascending=True)
+
     for user, row in grouped.iterrows():
         st.markdown(f"### <span style='color: #006400;'>{user} : {row['المجموع']} درجة</span>", unsafe_allow_html=True)
 
@@ -253,16 +259,21 @@ with tabs[2]:
     with col2:
         end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_2")
 
-    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+    filtered_df = merged_df[
+        (merged_df["التاريخ"] >= pd.to_datetime(start_date)) & 
+        (merged_df["التاريخ"] <= pd.to_datetime(end_date))
+    ]
 
     scores = filtered_df.drop(columns=["التاريخ", "username"], errors="ignore")
     grouped = filtered_df.groupby("username")[scores.columns].sum()
+    grouped = grouped.reindex(all_usernames, fill_value=0)  # ✅ لإظهار كل المستخدمين
 
     st.subheader("📋 تفاصيل الدرجات للجميع")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_3"):
         st.cache_data.clear()
         st.rerun()
     st.dataframe(grouped, use_container_width=True)
+
 
 # ===== تبويب 4: تجميعي بند =====
 with tabs[3]:
@@ -273,18 +284,22 @@ with tabs[3]:
     with col2:
         end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_3")
 
-    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+    filtered_df = merged_df[
+        (merged_df["التاريخ"] >= pd.to_datetime(start_date)) & 
+        (merged_df["التاريخ"] <= pd.to_datetime(end_date))
+    ]
 
     st.subheader("📌 مجموع بند لمستخدم")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_4"):
         st.cache_data.clear()
         st.rerun()
+    
     all_columns = [col for col in filtered_df.columns if col not in ["التاريخ", "username"]]
     selected_activity = st.selectbox("اختر البند", all_columns)
+
     activity_sum = filtered_df.groupby("username")[selected_activity].sum().sort_values(ascending=True)
-    missing_users = set(all_usernames) - set(users_with_data)
-    for user in missing_users:
-        activity_sum[user] = 0
+    activity_sum = activity_sum.reindex(all_usernames, fill_value=0)  # ✅ ضمان ظهور كل المستخدمين
+
     st.dataframe(activity_sum, use_container_width=True)
 
 # ===== تبويب 5: تقرير فردي =====
@@ -296,15 +311,23 @@ with tabs[4]:
     with col2:
         end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_4")
 
-    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+    filtered_df = merged_df[
+        (merged_df["التاريخ"] >= pd.to_datetime(start_date)) & 
+        (merged_df["التاريخ"] <= pd.to_datetime(end_date))
+    ]
 
     st.subheader(" تقرير تفصيلي لمستخدم")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_5"):
         st.cache_data.clear()
         st.rerun()
+    
     selected_user = st.selectbox("اختر المستخدم", filtered_df["username"].unique())
     user_df = filtered_df[filtered_df["username"] == selected_user].sort_values("التاريخ")
-    st.dataframe(user_df.reset_index(drop=True), use_container_width=True)
+
+    if user_df.empty:
+        st.info("لا توجد بيانات لهذا المستخدم في الفترة المحددة.")
+    else:
+        st.dataframe(user_df.reset_index(drop=True), use_container_width=True)
 
 # ===== تبويب 6: رسوم بيانية =====
 with tabs[5]:
@@ -315,15 +338,21 @@ with tabs[5]:
     with col2:
         end_date = st.date_input("إلى تاريخ", datetime.today().date(), key="end_date_5")
 
-    filtered_df = merged_df[(merged_df["التاريخ"] >= pd.to_datetime(start_date)) & (merged_df["التاريخ"] <= pd.to_datetime(end_date))]
+    filtered_df = merged_df[
+        (merged_df["التاريخ"] >= pd.to_datetime(start_date)) & 
+        (merged_df["التاريخ"] <= pd.to_datetime(end_date))
+    ]
 
     st.subheader("📈 رسوم بيانية")
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_6"):
         st.cache_data.clear()
         st.rerun()
+
     scores = filtered_df.drop(columns=["التاريخ", "username"], errors="ignore")
     grouped = filtered_df.groupby("username")[scores.columns].sum()
+    grouped = grouped.reindex(all_usernames, fill_value=0)  # ✅ ضمان ظهور كل المستخدمين
     grouped["المجموع"] = grouped.sum(axis=1)
+
     fig = go.Figure(go.Pie(
         labels=grouped.index,
         values=grouped["المجموع"],
