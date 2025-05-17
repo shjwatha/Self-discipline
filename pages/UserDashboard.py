@@ -267,8 +267,9 @@ with tabs[0]:
         
 
 
+
         yes_no_options = ["نعم", "لا"]
-        ratings_yes2 = {"نعم =": 2, "لا": 0}
+        ratings_yes2 = {"نعم": 2, "لا": 0}
         for col_name in columns[9:15]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
             rating = st.radio("", yes_no_options, horizontal=True, key=col_name)
