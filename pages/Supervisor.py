@@ -268,6 +268,9 @@ with tabs[2]:
     grouped = filtered_df.groupby("username")[scores.columns].sum()
     grouped = grouped.reindex(all_usernames, fill_value=0)  # ✅ لإظهار كل المستخدمين
 
+    # إعادة تعيين 'username' كعمود
+    grouped = grouped.reset_index()
+
     # عكس ترتيب الأعمدة مع الحفاظ على عمود 'username' في البداية
     grouped = grouped[['username'] + [col for col in grouped.columns if col != 'username']]
 
