@@ -272,8 +272,17 @@ with tabs[2]:
     if st.button("🔄 جلب المعلومات من قاعدة البيانات", key="refresh_3"):
         st.cache_data.clear()
         st.rerun()
-    st.dataframe(grouped, use_container_width=True)
 
+    st.markdown("""
+    <style>
+        .stDataFrame {
+            direction: rtl;
+            text-align: right;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.dataframe(grouped, use_container_width=True)
 
 # ===== تبويب 4: تجميعي بند =====
 with tabs[3]:
