@@ -224,7 +224,7 @@ with tabs[0]:
 
 
 # الاختيارات الأولى: الأعمدة الخمسة الأولى بدون تعديل
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>الاختيارات الأولى</h3>", unsafe_allow_html=True)
+
         options_1 = ["في المسجد جماعة", "في المنزل جماعة", "في المسجد منفرد", "في المنزل منفرد", "خارج الوقت"]
         ratings_1 = {
             "في المسجد جماعة": 5,
@@ -240,7 +240,7 @@ with tabs[0]:
             values.append(str(ratings_1[rating]))
         
         # العمود السادس: خيارات متعددة (Checkboxes) – كل خيار 1 درجة
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود السادس: أوقات الصلاة (كل اختيار 1 درجة)</h3>", unsafe_allow_html=True)
+
         checkbox_options = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"]
         st.markdown(f"<h4 style='font-weight: bold;'>{columns[6]}</h4>", unsafe_allow_html=True)
         
@@ -255,16 +255,16 @@ with tabs[0]:
         values.append(str(score_checkbox))
         
         # العمود السابع والثامن: تقييم القراءة بخيارات اختيار واحد
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود السابع والثامن: تقييم القراءة</h3>", unsafe_allow_html=True)
+
         time_read_options = ["قرأته لفترتين", "قرأته مرة واحدة في اليوم", "لم أتمكن من قراءته لهذا اليوم"]
         ratings_read = {"قرأته لفترتين": 2, "قرأته مرة واحدة في اليوم": 1, "لم أتمكن من قراءته لهذا اليوم": 0}
         for col_name in columns[7:9]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            rating = st.radio("", time_read_options, horizontal=True, key=col_name)
+            rating = st.radio("", time_read_options, key=col_name)  # أزلنا horizontal=True
             values.append(str(ratings_read[rating]))
         
         # الأعمدة من 9 إلى 14: إجابتان نعم أو لا (إذا كانت الإجابة نعم تعطي 2 درجة، ولا تعطي 0)
-        st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>العمود 9 إلى 14: تقييم بنعم أو لا (نعم = 2 درجة، لا = 0)</h3>", unsafe_allow_html=True)
+
         yes_no_options = ["نعم", "لا"]
         ratings_yes2 = {"نعم": 2, "لا": 0}
         for col_name in columns[9:15]:
@@ -277,7 +277,7 @@ with tabs[0]:
         
         # باقي الأعمدة إذا وُجدت: إجابتان نعم أو لا (نعم = 1 درجة، لا = 0)
         if len(columns) > 15:
-            st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>بقية الأعمدة: تقييم بنعم أو لا (نعم = 1 درجة، لا = 0)</h3>", unsafe_allow_html=True)
+
             remaining_columns = columns[15:]
             for col_name in remaining_columns:
                 st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
@@ -339,9 +339,14 @@ with tabs[2]:
     st.title("📊 مجموع البنود للفترة")
     refresh_button("refresh_tab2")
 
-    st.markdown("<h3 style='color: #0000FF; font-weight: bold;'>التقارير</h3>", unsafe_allow_html=True)
+
+
 
     df = pd.DataFrame(worksheet.get_all_records())
+    if "التاريخ" not in df.columns:
+        st.warning("⚠️ لا توجد بيانات بعد في ورقة هذا المستخدم. الرجاء البدء بإدخال أول تقييم.")
+        st.stop()
+ 
     df["التاريخ"] = pd.to_datetime(df["التاريخ"], errors="coerce")
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 
