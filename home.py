@@ -54,7 +54,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# تأكيد حالة الجلسة
+# التأكد من حالة الجلسة
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
@@ -67,45 +67,45 @@ if not st.session_state["authenticated"]:
 
         if submitted:
             match_found = False
-            # البحث في كل ملف من القائمة
-            for link in sheet_links:
-                sheet_id = extract_spreadsheet_id(link)
-                try:
-                    admin_sheet = client.open_by_key(sheet_id).worksheet("admin")
-                    users_df = pd.DataFrame(admin_sheet.get_all_records())
-                    
-                    # التحقق من وجود المستخدم بناءً على username أو full_name وكلمة المرور
-                    matched = users_df[
-                        (((users_df["username"] == username) | (users_df["full_name"] == username)) &
-                         (users_df["password"] == password))
-                    ]
-                    
-                    if not matched.empty:
-                        user_row = matched.iloc[0]
-                        st.session_state["authenticated"] = True
-                        st.session_state["username"] = user_row["username"]
-                        st.session_state["sheet_url"] = link  # حفظ الرابط الخاص بالملف الذي يتواجد فيه المستخدم
-                        st.session_state["permissions"] = user_row["role"]
-                        st.success("✅ تم تسجيل الدخول")
-                        match_found = True
-                        break  # إيقاف البحث عند إيجاد تطابق
-                except Exception as e:
-                    # يمكن تعديل هذه الرسالة أو تسجيل الخطأ حسب الحاجة
-                    st.error(f"خطأ في الوصول إلى الملف {link}: {e}")
-            if not match_found:
-                st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
+            # استخدام spinner لإظهار رسالة تحويل المستخدم
+            with st.spinner("جاري تحويلك لملف البيانات الخاص بك قد يستغرق الأمر دقيقة أو دقيقتين"):
+                for link in sheet_links:
+                    sheet_id = extract_spreadsheet_id(link)
+                    try:
+                        admin_sheet = client.open_by_key(sheet_id).worksheet("admin")
+                        users_df = pd.DataFrame(admin_sheet.get_all_records())
+                        
+                        # التحقق من وجود المستخدم باستخدام "username" أو "full_name" وكلمة المرور
+                        matched = users_df[
+                            (((users_df["username"] == username) | (users_df["full_name"] == username)) &
+                             (users_df["password"] == password))
+                        ]
+                        
+                        if not matched.empty:
+                            user_row = matched.iloc[0]
+                            st.session_state["authenticated"] = True
+                            st.session_state["username"] = user_row["username"]
+                            st.session_state["sheet_url"] = link  # حفظ الرابط الخاص بالملف الذي وجد فيه المستخدم
+                            st.session_state["permissions"] = user_row["role"]
+                            match_found = True
+                            break  # خروج من الحلقة عند إيجاد تطابق
+                    except Exception as e:
+                        # تجاهل أي أخطاء أثناء الوصول إلى الملفات وعدم عرض رسالة الخطأ التفصيلية
+                        continue
+
+            # بعد الانتهاء من البحث، يتم عرض النتيجة المناسبة:
+            if match_found:
+                st.success("✅ تم تسجيل الدخول بنجاح")
+            else:
+                st.error("❌ البيانات المدخلة غير صحيحة")
 else:
     # ===== إعادة التوجيه حسب الصلاحيات =====
     permission = st.session_state.get("permissions")
-    # هنا نستعين برابط الملف المُخزن في الـ session لتحديد الملف الخاص بالمستخدم
     if permission in ["supervisor", "sp"]:
-        st.write(f"توجيه المشرف: {st.session_state['sheet_url']}")
         st.switch_page("pages/Supervisor.py")
     elif permission == "admin":
-        st.write(f"توجيه المسؤول: {st.session_state['sheet_url']}")
         st.switch_page("pages/AdminDashboard.py")
     elif permission == "user":
-        st.write(f"توجيه المستخدم: {st.session_state['sheet_url']}")
         st.switch_page("pages/UserDashboard.py")
     else:
         st.error("⚠️ صلاحية غير معروفة.")
