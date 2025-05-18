@@ -290,7 +290,7 @@ with tabs[0]:
             values.append(str(ratings_read[rating]))
         
 # زر الإرسال والحفظ
-                submit = st.form_submit_button("💾 حفظ")
+        submit = st.form_submit_button("💾 حفظ")
 
 if submit:
     if selected_date not in [d for _, d in hijri_dates]:
