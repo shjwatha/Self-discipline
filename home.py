@@ -4,13 +4,13 @@ import pandas as pd
 import json
 from google.oauth2.service_account import Credentials
 
-# إعداد الاتصال بـ Google Sheets
+# ===== إعداد الاتصال بـ Google Sheets =====
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
 client = gspread.authorize(creds)
 
-# إعداد الصفحة
+# ===== إعداد الصفحة =====
 st.set_page_config(page_title="تسجيل الدخول", page_icon="🔐")
 st.title("🔐 تسجيل الدخول")
 
@@ -19,17 +19,17 @@ if st.button("🔄 جلب المعلومات من قاعدة البيانات"):
     st.cache_data.clear()
     st.success("✅ تم تحديث البيانات")
 
-# إخفاء الاقتراحات التلقائية
+# إخفاء الاقتراحات التلقائية في iOS
 st.markdown("""
 <input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
 <input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
 """, unsafe_allow_html=True)
 
-# الجلسة الابتدائية
+# الحالة الافتراضية
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# تعريف روابط الملفات (15 مستوى)
+# معرفات Google Sheets لكل مستوى
 SHEET_IDS = {
     "المستوى 1":  "1Jx6MsOy4x5u7XsWFx1G3HpdQS1Ic5_HOEogbnWCXA3c",
     "المستوى 2":  "1kyNn69CTM661nNMhiestw3VVrH6rWrDQl7-dN5eW0kQ",
@@ -48,7 +48,7 @@ SHEET_IDS = {
     "المستوى 15": "1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY"
 }
 
-# نموذج تسجيل الدخول
+# ===== واجهة تسجيل الدخول =====
 if not st.session_state["authenticated"]:
     if st.session_state.get("login_locked", False):
         st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
@@ -61,19 +61,22 @@ if not st.session_state["authenticated"]:
 
     else:
         with st.form("login_form"):
-            input_value = st.text_input("اسم المستخدم أو الاسم الكامل", key="login_input").strip()
-            password = st.text_input("كلمة المرور", type="password", key="login_pass").strip()
+            input_value = st.text_input("اسم المستخدم أو الاسم الكامل")
+            password = st.text_input("كلمة المرور", type="password")
             submitted = st.form_submit_button("دخول")
 
             if submitted:
-                # تصفير كامل للجلسة
-                for key in list(st.session_state.keys()):
-                    if key not in ["_is_running_with_streamlit"]:
+                # تصفير كل القيم السابقة
+                for key in ["authenticated", "username", "full_name", "permissions", "sheet_name", "sheet_id", "level", "login_locked"]:
+                    if key in st.session_state:
                         del st.session_state[key]
-
                 st.session_state["authenticated"] = False
+
                 status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك...")
                 user_found = False
+
+                input_value = input_value.strip()
+                password = password.strip()
 
                 for level_name, sheet_id in SHEET_IDS.items():
                     try:
@@ -99,7 +102,7 @@ if not st.session_state["authenticated"]:
                             st.session_state["sheet_id"] = sheet_id
                             st.session_state["level"] = level_name
                             user_found = True
-                            st.rerun()
+                            st.rerun()  # ← للدخول الفوري
                     except:
                         continue
 
@@ -107,8 +110,9 @@ if not st.session_state["authenticated"]:
                 if not user_found:
                     st.session_state["login_locked"] = True
                     st.rerun()
-                    st.stop()  # ← يمنع أي تنفيذ إضافي بعد الفشل
+
 else:
+    # التوجيه التلقائي بعد تسجيل الدخول
     role = st.session_state.get("permissions")
     if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
