@@ -396,24 +396,19 @@ with tabs[3]:
     try:
         notes_sheet = spreadsheet.worksheet("notes")
         notes_data = pd.DataFrame(notes_sheet.get_all_records())
-    except Exception:
+    except Exception as e:
         st.warning("❌ لا يمكن تحميل الإنجازات حاليًا. حاول لاحقًا.")
         st.stop()
 
-    # تأكد من وجود الاسم الكامل
-    user_fullname = st.session_state.get("full_name", "").strip()
-    if not user_fullname:
+    # ✅ استخراج اسم الطالب من الجلسة
+    full_name = st.session_state.get("full_name", "").strip()
+
+    if not full_name:
         st.warning("⚠️ لا يمكن تحديد اسمك. يرجى تسجيل الدخول مجددًا.")
         st.stop()
 
-    # تأكد من أن العمود موجود
-    if "الطالب" not in notes_data.columns or "timestamp" not in notes_data.columns or "الملاحظة" not in notes_data.columns:
-        st.error("⚠️ البيانات غير مكتملة في ورقة الإنجازات (notes).")
-        st.stop()
-
-    # تطابق الاسم بعد إزالة الفراغات وتوحيد الكتابة
-    notes_data["الطالب"] = notes_data["الطالب"].astype(str).str.strip()
-    user_notes = notes_data[notes_data["الطالب"] == user_fullname]
+    # ✅ تصفية الإنجازات الخاصة بالمستخدم الحالي
+    user_notes = notes_data[notes_data["الطالب"].str.strip() == full_name]
 
     if user_notes.empty:
         st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
@@ -423,8 +418,8 @@ with tabs[3]:
 
         for _, row in user_notes.iterrows():
             st.markdown(f"""
-                <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
-                    <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
-                    <b>🏆 الإنجاز:</b><br> {row['الملاحظة']}
-                </div>
+            <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
+                <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
+                <b>🏆 الإنجاز:</b><br> {row['الملاحظة']}
+            </div>
             """, unsafe_allow_html=True)
