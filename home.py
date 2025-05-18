@@ -60,8 +60,9 @@ if not st.session_state["authenticated"]:
             for key in ["username", "full_name", "permissions", "sheet_name", "sheet_id", "level"]:
                 if key in st.session_state:
                     del st.session_state[key]
+            st.session_state["authenticated"] = False
 
-            status_msg = st.info("⏳  جاري توجيهك لملف البيانات الخاص بك قد يستغرق الأمر دقيقة أو دقيقتين...")
+            status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك قد يستغرق الأمر دقيقة أو دقيقتين...")
             user_found = False
 
             for level_name, sheet_id in SHEET_IDS.items():
@@ -77,7 +78,7 @@ if not st.session_state["authenticated"]:
                     if not match.empty:
                         row = match.iloc[0]
                         st.session_state["authenticated"] = True
-                        st.session_state["username"] = row["username"]  # من الجدول
+                        st.session_state["username"] = row["username"]
                         st.session_state["full_name"] = row["full_name"]
                         st.session_state["permissions"] = row["role"]
                         st.session_state["sheet_name"] = row["sheet_name"]
@@ -87,11 +88,15 @@ if not st.session_state["authenticated"]:
                         break
 
                 except:
-                    continue  # تجاهل أي خطأ في فتح الملفات
+                    continue  # تجاهل الأخطاء
 
             status_msg.empty()
             if not user_found:
+                # تصفير الجلسة بالكامل بعد فشل الدخول
                 st.session_state["authenticated"] = False
+                for key in ["username", "full_name", "permissions", "sheet_name", "sheet_id", "level"]:
+                    if key in st.session_state:
+                        del st.session_state[key]
                 st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
             else:
                 st.success("✅ تم تسجيل الدخول بنجاح")
@@ -105,7 +110,7 @@ if not st.session_state["authenticated"]:
                 else:
                     st.error("⚠️ صلاحية غير معروفة.")
 else:
-    # إعادة التوجيه التلقائي عند تسجيل الدخول
+    # التوجيه التلقائي إذا سبق الدخول
     role = st.session_state.get("permissions")
     if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
