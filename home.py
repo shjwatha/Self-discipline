@@ -75,6 +75,10 @@ if not st.session_state["authenticated"]:
                         (df["password"] == password)
                     ]
 
+
+                    st.write(f"🔍 محاولة في {level_name} ({sheet_id})")
+                    st.write(match)
+
                     if not match.empty:
                         row = match.iloc[0]
                         st.session_state["authenticated"] = True
