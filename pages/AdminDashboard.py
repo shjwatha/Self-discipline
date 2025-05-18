@@ -30,7 +30,10 @@ try:
     admin_sheet = spreadsheet.worksheet("admin")
     users_df = pd.DataFrame(admin_sheet.get_all_records())
 except Exception as e:
-    st.error(f"❌ تعذر تحميل الملف الخاص بك: {e}")
+    if "Quota exceeded" in str(e) or "429" in str(e):
+        st.error("❌ لقد تجاوزت عدد المرات المسموح لك بها الاتصال بقاعدة البيانات في الدقيقة.\n\nيرجى المحاولة مجددًا بعد دقيقة.")
+    else:
+        st.error("❌ حدث خطأ أثناء تحميل الملف الخاص بك. يرجى المحاولة لاحقًا.")
     st.stop()
 
 # ===== إعداد الصفحة =====
@@ -123,7 +126,10 @@ with st.form("create_user_form"):
                         break
                 except Exception as e:
                     had_error = True
-                    st.warning(f"⚠️ تعذر قراءة أحد الملفات أثناء التحقق: {e}")
+                    if "Quota exceeded" in str(e) or "429" in str(e):
+                        st.error("❌ لقد تجاوزت عدد المرات المسموح لك بها الاتصال بقاعدة البيانات في الدقيقة.\n\nيرجى المحاولة مجددًا بعد دقيقة.")
+                    else:
+                        st.error("⚠️ حدث خطأ غير متوقع أثناء التحقق من الحسابات. يرجى المحاولة لاحقًا.")
                     break
 
             if had_error:
