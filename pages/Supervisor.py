@@ -375,3 +375,67 @@ with tabs[5]:
         title="مجموع الدرجات"
     ))
     st.plotly_chart(fig, use_container_width=True)
+
+
+
+
+
+
+===================================
+
+with tabs[6]:
+    st.subheader("📌 رصد الإنجاز")
+
+    # 🟢 استيراد قائمة الإنجازات من ملف الكنترول
+    try:
+        central_sheet = client.open_by_key("1e4G2E252jh_51hwbRyZAyrCjZzO6BRNV7uZMcvnuNh0")
+        achievements_ws = central_sheet.worksheet("achievements_list")
+        achievements_data = achievements_ws.col_values(1)[1:]  # حذف العنوان
+        achievements = [a.strip() for a in achievements_data if a.strip()]
+    except Exception as e:
+        st.error(f"❌ تعذر تحميل قائمة الإنجازات: {e}")
+        st.stop()
+
+    # 🟢 استيراد ورقة notes أو إنشاؤها إن لم تكن موجودة
+    try:
+        notes_ws = spreadsheet.worksheet("notes")
+        notes_data = pd.DataFrame(notes_ws.get_all_records())
+    except:
+        notes_ws = spreadsheet.add_worksheet(title="notes", rows=1000, cols=4)
+        notes_ws.append_row(["timestamp", "الطالب", "المشرف", "الملاحظة"])
+        notes_data = pd.DataFrame()
+
+    # 🟢 القسم الأول: رصد إنجاز جديد
+    st.markdown("### ➕ رصد إنجاز جديد")
+
+    student_list = filtered_users["username"].tolist()
+    selected_student = st.selectbox(" اختر الطالب", student_list, key="student_select_achievement")
+
+    selected_achievement = st.selectbox("🏆 اختر الإنجاز", achievements, key="achievement_select")
+
+    if st.button("✅ رصد الإنجاز"):
+        timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        notes_ws.append_row([timestamp, selected_student, username, selected_achievement])
+        st.success("✅ تم رصد الإنجاز للطالب بنجاح.")
+
+    # 🔵 القسم الثاني: استعراض إنجازات طالب معين
+    st.markdown("---")
+    st.markdown("### 📖 عرض إنجازات طالب")
+
+    selected_view_student = st.selectbox("📚 اختر الطالب لعرض إنجازاته", student_list, key="student_view_achievement")
+
+    if st.button("📄 عرض الإنجازات"):
+        if notes_data.empty:
+            st.info("ℹ️ لا توجد بيانات إنجازات حتى الآن.")
+        else:
+            filtered = notes_data[notes_data["الطالب"] == selected_view_student]
+            if filtered.empty:
+                st.warning("⚠️ لا توجد إنجازات مسجلة لهذا الطالب بعد.")
+            else:
+                filtered = filtered.rename(columns={
+                    "timestamp": "🕒 التاريخ",
+                    "الطالب": " الطالب",
+                    "المشرف": "‍🏫 المشرف",
+                    "الملاحظة": "🏆 الإنجاز"
+                })
+                st.dataframe(filtered[["🕒 التاريخ", " الطالب", "‍🏫 المشرف", "🏆 الإنجاز"]], use_container_width=True)
