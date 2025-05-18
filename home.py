@@ -4,7 +4,7 @@ import pandas as pd
 import json
 from google.oauth2.service_account import Credentials
 
-# ===== إعداد الاتصال بـ Google Sheets =====
+# ===== الاتصال بـ Google Sheets =====
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
@@ -19,7 +19,7 @@ if st.button("🔄 جلب المعلومات من قاعدة البيانات"):
     st.cache_data.clear()
     st.success("✅ تم تحديث البيانات")
 
-# إخفاء تعبئة iOS التلقائية
+# إخفاء اقتراحات iOS التلقائية
 st.markdown("""
 <input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
 <input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
@@ -53,22 +53,9 @@ if not st.session_state["authenticated"]:
     if st.session_state.get("login_locked", False):
         st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
 
-        st.markdown("""
-        <div style='text-align: center; margin-top: 10px;'>
-            <a href="" style="text-decoration: none;">
-                <button style="
-                    background-color: #f44336;
-                    color: white;
-                    padding: 8px 20px;
-                    border: none;
-                    border-radius: 5px;
-                    font-weight: bold;
-                    cursor: pointer;">
-                    🔁 حاول مجددًا
-                </button>
-            </a>
-        </div>
-        """, unsafe_allow_html=True)
+        if st.button("🔁 حاول مجددًا"):
+            st.session_state["login_locked"] = False
+            st.rerun()
 
     else:
         with st.form("login_form"):
@@ -77,7 +64,7 @@ if not st.session_state["authenticated"]:
             submitted = st.form_submit_button("دخول")
 
             if submitted:
-                # تصفير الجلسة
+                # تصفير بيانات الجلسة
                 for key in ["username", "full_name", "permissions", "sheet_name", "sheet_id", "level"]:
                     if key in st.session_state:
                         del st.session_state[key]
@@ -114,7 +101,7 @@ if not st.session_state["authenticated"]:
                 if not user_found:
                     st.session_state["login_locked"] = True
 else:
-    # توجيه تلقائي إذا تم تسجيل الدخول
+    # التوجيه التلقائي بعد تسجيل الدخول
     role = st.session_state.get("permissions")
     if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
