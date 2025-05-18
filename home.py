@@ -100,6 +100,8 @@ if not st.session_state["authenticated"]:
                 status_msg.empty()
                 if not user_found:
                     st.session_state["login_locked"] = True
+                    st.rerun()
+
 else:
     # التوجيه التلقائي بعد تسجيل الدخول
     role = st.session_state.get("permissions")
