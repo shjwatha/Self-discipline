@@ -85,7 +85,8 @@ if not st.session_state["authenticated"]:
                             user_row = matched.iloc[0]
                             st.session_state["authenticated"] = True
                             st.session_state["username"] = user_row["username"]
-                            st.session_state["sheet_url"] = link  # حفظ الرابط الخاص بالمستخدم
+                            st.session_state["sheet_url"] = link
+                            st.session_state["sheet_id"] = sheet_id
                             st.session_state["permissions"] = user_row["role"]
                             match_found = True
                             break  # خروج من الحلقة عند إيجاد تطابق
