@@ -401,7 +401,11 @@ with tabs[3]:
         st.stop()
 
     # 🔹 القسم الأول: عرض إنجازات المستخدم الحالي
-    user_notes = notes_data[notes_data["الطالب"] == st.session_state["full_name"]]
+    if "full_name" not in st.session_state:
+        st.warning("⚠️ لم يتم التعرف على المستخدم. يرجى إعادة تسجيل الدخول.")
+        st.stop()
+
+user_notes = notes_data[notes_data["الطالب"] == st.session_state["full_name"]]
 
     if user_notes.empty:
         st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
