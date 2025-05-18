@@ -165,9 +165,7 @@ def show_chat():
 
 
 # ===== التبويبات =====
-
-tabs = st.tabs(["📝 إدخال البيانات", "💬 المحادثات", "📊 تقارير المجموع", "🏆 تقرير الإنجاز"])
-
+tabs = st.tabs(["📝 إدخال البيانات", "💬 المحادثات", "📊 تقارير المجموع", "📌 الملاحظات"])
 
 
 # ===== التبويب الأول: إدخال البيانات =====
@@ -308,8 +306,8 @@ with tabs[0]:
                         row_index = len(all_dates) + 1
                         worksheet.update_cell(row_index, 1, date_str)
 
-                    worksheet.update(f"A{row_index}:{chr(64+len(values))}{row_index}", [values])
-
+                    for i, val in enumerate(values[1:], start=2):
+                        worksheet.update_cell(row_index, i, val)
 
                     st.cache_data.clear()
                     data = load_data()
@@ -391,55 +389,26 @@ with tabs[2]:
     
 # ===== التبويب الرابع: عرض ملاحظات المشرف =====
 with tabs[3]:
-    st.title("🏆 تقرير الإنجاز")
+    st.title("📝 ملاحظات المشرف")
 
     try:
         notes_sheet = spreadsheet.worksheet("notes")
         notes_data = pd.DataFrame(notes_sheet.get_all_records())
+        notes_data = notes_data[notes_data["username"] == st.session_state["username"]]
     except Exception as e:
-        st.warning("❌ لا يمكن تحميل الإنجازات حاليًا. حاول لاحقًا.")
+        st.warning("❌ لا يمكن تحميل الملاحظات حاليًا. حاول لاحقًا.")
         st.stop()
 
-    # 🔹 القسم الأول: عرض إنجازات المستخدم الحالي
-    if "full_name" not in st.session_state:
-        st.warning("⚠️ لم يتم التعرف على المستخدم. يرجى إعادة تسجيل الدخول.")
-        st.stop()
-
-user_notes = notes_data[notes_data["الطالب"] == st.session_state["full_name"]]
-
-    if user_notes.empty:
-        st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
+    if notes_data.empty:
+        st.info("📭 لا توجد ملاحظات حتى الآن.")
     else:
-        user_notes["timestamp"] = pd.to_datetime(user_notes["timestamp"], errors="coerce")
-        user_notes = user_notes.sort_values(by="timestamp", ascending=False)
+        notes_data["date"] = pd.to_datetime(notes_data["date"], errors="coerce")
+        notes_data = notes_data.sort_values(by="date", ascending=False)
 
-        for _, row in user_notes.iterrows():
+        for _, row in notes_data.iterrows():
             st.markdown(f"""
             <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
-                <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
-                <b>🏆 الإنجاز:</b><br> {row['الملاحظة']}
+                <b>📅 التاريخ:</b> {row['date'].date()}<br>
+                <b>📝 الملاحظة:</b><br> {row['note']}
             </div>
             """, unsafe_allow_html=True)
-
-    # 🔵 القسم الثاني: استعراض إنجازات طالب معين
-    st.markdown("---")
-    st.markdown("### 📖 عرض إنجازات طالب")
-
-    # استخراج قائمة الطلاب من الملاحظات
-    student_list = notes_data["الطالب"].dropna().unique().tolist()
-
-    selected_view_student = st.selectbox("📚 اختر الطالب لعرض إنجازاته", student_list, key="student_view_achievement")
-
-    if st.button("📄 عرض الإنجازات"):
-        filtered = notes_data[notes_data["الطالب"] == selected_view_student]
-
-        if filtered.empty:
-            st.warning("⚠️ لا توجد إنجازات مسجلة لهذا الطالب بعد.")
-        else:
-            filtered = filtered.rename(columns={
-                "timestamp": "🕒 التاريخ",
-                "الطالب": " الطالب",
-                "المشرف": "‍🏫 المشرف",
-                "الملاحظة": "🏆 الإنجاز"
-            })
-            st.dataframe(filtered[["🕒 التاريخ", " الطالب", "‍🏫 المشرف", "🏆 الإنجاز"]], use_container_width=True)
