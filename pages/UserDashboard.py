@@ -408,7 +408,7 @@ with tabs[3]:
 
     user_full_name = st.session_state["full_name"]
 
-    user_notes = notes_data[notes_data["الطالب"] == user_full_name]
+    user_notes = notes_data[notes_data["الطالب"] == user_username]
 
     if user_notes.empty:
         st.info("📭 لا توجد إنجازات مسجلة باسمك حتى الآن.")
