@@ -401,19 +401,19 @@ with tabs[3]:
         st.stop()
 
     # 🔹 القسم الأول: عرض إنجازات المستخدم الحالي
-    user_notes = notes_data[notes_data["username"] == st.session_state["username"]]
+    user_notes = notes_data[notes_data["الطالب"] == st.session_state["full_name"]]
 
     if user_notes.empty:
         st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
     else:
-        user_notes["date"] = pd.to_datetime(user_notes["date"], errors="coerce")
-        user_notes = user_notes.sort_values(by="date", ascending=False)
+        user_notes["timestamp"] = pd.to_datetime(user_notes["timestamp"], errors="coerce")
+        user_notes = user_notes.sort_values(by="timestamp", ascending=False)
 
         for _, row in user_notes.iterrows():
             st.markdown(f"""
             <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
-                <b>📅 التاريخ:</b> {row['date'].date()}<br>
-                <b>🏆 الإنجاز:</b><br> {row['note']}
+                <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
+                <b>🏆 الإنجاز:</b><br> {row['الملاحظة']}
             </div>
             """, unsafe_allow_html=True)
 
