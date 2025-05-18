@@ -115,9 +115,11 @@ with st.form("create_user_form"):
                     continue
 
             if is_duplicate:
-                st.error("🚫 هذا الحساب مستخدم مسبقًا في أحد الملفات")
+                st.error("🚫 اسم المستخدم محجوز من قبل شخص آخر")
             else:
                 try:
+
+
                     worksheet_name = f"بيانات - {username}"
                     worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="30")
                     worksheet.insert_row(get_default_columns(), 1)
@@ -125,4 +127,7 @@ with st.form("create_user_form"):
                     st.success("✅ تم إنشاء المستخدم والورقة بنجاح")
                     st.rerun()
                 except Exception as e:
-                    st.error(f"❌ حدث خطأ أثناء إنشاء المستخدم: {e}")
+                    if "already exists" in str(e):
+                        st.error("❌ الاسم الكامل مستخدم من قبل شخص آخر")
+                    else:
+                        st.error(f"❌ حدث خطأ أثناء إنشاء المستخدم: {e}")
