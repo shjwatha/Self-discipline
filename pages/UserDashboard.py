@@ -400,15 +400,17 @@ with tabs[3]:
         st.warning("❌ لا يمكن تحميل الإنجازات حاليًا. حاول لاحقًا.")
         st.stop()
 
-    # ✅ استخراج اسم الطالب من الجلسة
-    full_name = st.session_state.get("full_name", "").strip()
+    full_name = st.session_state.get("full_name", "").strip().lower()
 
     if not full_name:
         st.warning("⚠️ لا يمكن تحديد اسمك. يرجى تسجيل الدخول مجددًا.")
         st.stop()
 
-    # ✅ تصفية الإنجازات الخاصة بالمستخدم الحالي
-    user_notes = notes_data[notes_data["الطالب"].str.strip() == full_name]
+    # توحيد البيانات للتأكد من التصفية
+    notes_data["الطالب"] = notes_data["الطالب"].astype(str).str.strip().str.lower()
+
+    # تصفية الملاحظات
+    user_notes = notes_data[notes_data["الطالب"] == full_name]
 
     if user_notes.empty:
         st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
