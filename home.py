@@ -4,35 +4,51 @@ import pandas as pd
 import json
 from google.oauth2.service_account import Credentials
 
-# ===== الاتصال بـ Google Sheets =====
+# ===== إعداد الاتصال بـ Google Sheets =====
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
 client = gspread.authorize(creds)
 
-# ===== إعداد صفحة تسجيل الدخول =====
+# ===== إعداد الصفحة =====
 st.set_page_config(page_title="تسجيل الدخول", page_icon="🔐")
 st.title("🔐 تسجيل الدخول")
 
-# ===== زر التحديث اليدوي =====
+# ===== دعم زر التحديث اليدوي =====
 if st.button("🔄 جلب المعلومات من قاعدة البيانات"):
     st.cache_data.clear()
     st.success("✅ تم تحديث البيانات")
 
-# إضافة حقول وهمية مخفية لمنع تعبئة iCloud Keychain على iOS
-st.markdown(
-    """
+# ===== تخطي تعبئة iCloud على iOS =====
+st.markdown("""
     <input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
     <input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-# تحقق من صلاحية المستخدم
+# ===== ملفات Google Sheets لكل مستوى =====
+SHEET_IDS = {
+    "المستوى 1":  "1Jx6MsOy4x5u7XsWFx1G3HpdQS1Ic5_HOEogbnWCXA3c",
+    "المستوى 2":  "1kyNn69CTM661nNMhiestw3VVrH6rWrDQl7-dN5eW0kQ",
+    "المستوى 3":  "1rZT2Hnc0f4pc4qKctIRt_eH6Zt2O8yF-SIpS66IzhNU",
+    "المستوى 4":  "19L878i-iQtZgHgqFThSFgWJBFpTsQFiD5QS7lno8rsI",
+    "المستوى 5":  "1YimetyT4xpKGheuN-TFm5J8w6k6cf3yIwQXRmvIqTW0",
+    "المستوى 6":  "1Fxo3XgJHCJgcuXseNjmRePRH4L0t6gpkDv0Sz0Tm_u8",
+    "المستوى 7":  "1t5u5qE8tXSChK4ezshF5FZ_eYMpjR_00xsp4CUrPp5c",
+    "المستوى 8":  "1crt5ERYxrt8Cg1YkcK40CkO3Bribr3vOMmOkttDpR1A",
+    "المستوى 9":  "1v4asV17nPg2u62eYsy1dciQX5WnVqNRmXrWfTY2jvD0",
+    "المستوى 10": "15waTwimthOdMTeqGS903d8ELR8CtCP3ZivIYSsgLmP4",
+    "المستوى 11": "1BSqbsfjw0a4TM-C0W0pIh7IhqzZ8jU3ZhFy8gu4CMWo",
+    "المستوى 12": "1AtsVnicX_6Ew7Oci3xP77r6W3yA-AhntlT3TNGcbPbM",
+    "المستوى 13": "1jcCGm1rfW_6bNg8tyaK6aOyKvXuC4Jc2w-wrjiDX20s",
+    "المستوى 14": "1qkhZjgftc7Ro9pGJGdydICHQb0yUtV8P9yWzSCD3ewo",
+    "المستوى 15": "1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY",  # الملف الأساسي
+}
+
+# ===== حالة المصادقة الافتراضية =====
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# التحقق من تسجيل الدخول
+# ===== نموذج تسجيل الدخول =====
 if not st.session_state["authenticated"]:
     with st.form("login_form"):
         username = st.text_input("اسم المستخدم")
@@ -40,43 +56,53 @@ if not st.session_state["authenticated"]:
         submitted = st.form_submit_button("دخول")
 
         if submitted:
-            # جلب البيانات من شيت الأدمن
-            admin_sheet = client.open_by_key("1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY").worksheet("admin")
-            users_df = pd.DataFrame(admin_sheet.get_all_records())
-            
-            # التحقق من وجود المستخدم وكلمة المرور
-            matched = users_df[
-                ((users_df["username"] == username) | (users_df["full_name"] == username)) &
-                (users_df["password"] == password)
-            ]
+            user_found = False
+            for level_name, sheet_id in SHEET_IDS.items():
+                try:
+                    sheet = client.open_by_key(sheet_id).worksheet("admin")
+                    df = pd.DataFrame(sheet.get_all_records())
 
-            if not matched.empty:
-                user_row = matched.iloc[0]
-                st.session_state["authenticated"] = True
-                st.session_state["username"] = user_row["username"]
-                st.session_state["sheet_url"] = user_row["sheet_name"]
-                st.session_state["permissions"] = user_row["role"]
-                st.success("✅ تم تسجيل الدخول")
+                    match = df[
+                        ((df["username"] == username) | (df["full_name"] == username)) &
+                        (df["password"] == password)
+                    ]
 
-                # إعادة التوجيه بناءً على الصلاحية
-                if st.session_state["permissions"] in ["supervisor", "sp"]:
-                    st.switch_page("pages/Supervisor.py")
-                elif st.session_state["permissions"] == "admin":
+                    if not match.empty:
+                        row = match.iloc[0]
+                        st.session_state["authenticated"] = True
+                        st.session_state["username"] = row["username"]
+                        st.session_state["full_name"] = row["full_name"]
+                        st.session_state["permissions"] = row["role"]
+                        st.session_state["sheet_name"] = row["sheet_name"]
+                        st.session_state["sheet_id"] = sheet_id
+                        st.session_state["level"] = level_name
+                        user_found = True
+                        break
+
+                except Exception as e:
+                    st.warning(f"⚠️ تعذر الوصول إلى ملف {level_name}")
+
+            if not user_found:
+                st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
+            else:
+                # التوجيه حسب نوع الحساب
+                role = st.session_state["permissions"]
+                if role == "admin":
                     st.switch_page("pages/AdminDashboard.py")
-                elif st.session_state["permissions"] == "user":
+                elif role in ["supervisor", "sp"]:
+                    st.switch_page("pages/Supervisor.py")
+                elif role == "user":
                     st.switch_page("pages/UserDashboard.py")
                 else:
                     st.error("⚠️ صلاحية غير معروفة.")
-            else:
-                st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
 else:
-    # إعادة التوجيه حسب الصلاحية
-    permission = st.session_state.get("permissions")
-    if permission in ["supervisor", "sp"]:
-        st.switch_page("pages/Supervisor.py")
-    elif permission == "admin":
+    # إعادة التوجيه إن كان مسجلاً بالفعل
+    role = st.session_state.get("permissions")
+    if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
-    elif permission == "user":
+    elif role in ["supervisor", "sp"]:
+        st.switch_page("pages/Supervisor.py")
+    elif role == "user":
         st.switch_page("pages/UserDashboard.py")
     else:
         st.error("⚠️ صلاحية غير معروفة.")
