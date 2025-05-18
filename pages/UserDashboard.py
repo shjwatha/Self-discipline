@@ -306,7 +306,8 @@ with tabs[0]:
                         row_index = len(all_dates) + 1
                         worksheet.update_cell(row_index, 1, date_str)
 
-                    worksheet.update(f"A{row_index}:{chr(64+len(values))}{row_index}", [values])
+                    for i, val in enumerate(values[1:], start=2):
+                        worksheet.update_cell(row_index, i, val)
 
                     st.cache_data.clear()
                     data = load_data()
