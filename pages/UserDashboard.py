@@ -169,8 +169,6 @@ tabs = st.tabs(["📝 إدخال البيانات", "💬 المحادثات", "
 
 
 # ===== التبويب الأول: إدخال البيانات =====
-
-
 with tabs[0]:
 
     st.markdown(
@@ -185,17 +183,12 @@ with tabs[0]:
         unsafe_allow_html=True
     )
 
-    # تصغير "أهلاً ... مجموعتك"
     st.markdown(f"<h3 style='color: #0000FF; font-weight: bold; font-size: 24px;'>👋 أهلاً {username} | مجموعتك / {mentor_name}</h3>", unsafe_allow_html=True)
-
-    # تصغير "المحاسبة الذاتية"
     st.markdown("<h4 style='color: #0000FF; font-weight: bold; font-size: 20px;'>📝 المحاسبة الذاتية</h4>", unsafe_allow_html=True)
 
     refresh_button("refresh_tab1")
 
-
-
-# ===== تنبيه بالرسائل غير المقروءة =====
+    # ===== تنبيه بالرسائل غير المقروءة =====
     chat_sheet = spreadsheet.worksheet("chat")
     chat_data = pd.DataFrame(chat_sheet.get_all_records())
 
@@ -209,19 +202,18 @@ with tabs[0]:
         if senders:
             sender_list = "، ".join(senders)
             st.markdown(f"""
-    <table style="width:100%;">
-    <tr>
-    <td style="direction: rtl; text-align: right; color: red; font-weight: bold; font-size: 16px;">
-    📬 يوجد لديك رسائل لم تطلع عليها من: ({sender_list})
-    </td>
-    </tr>
-    </table>
-    """, unsafe_allow_html=True)
+            <table style="width:100%;">
+            <tr>
+            <td style="direction: rtl; text-align: right; color: red; font-weight: bold; font-size: 16px;">
+            📬 يوجد لديك رسائل لم تطلع عليها من: ({sender_list})
+            </td>
+            </tr>
+            </table>
+            """, unsafe_allow_html=True)
 
     with st.form("daily_form"):
         today = datetime.today().date()
 
-        # توليد آخر 7 تواريخ بالهجري
         hijri_dates = []
         for i in range(7):
             g_date = today - timedelta(days=i)
@@ -238,19 +230,13 @@ with tabs[0]:
             }[weekday]
             g_date_str = f"{g_date.day}/{g_date.month}/{g_date.year}"
             hijri_label = f"{arabic_weekday} - {g_date_str}"
-
             hijri_dates.append((hijri_label, g_date))
 
-        # إنشاء قائمة اختيار من التواريخ الهجرية
         hijri_labels = [label for label, _ in hijri_dates]
         selected_label = st.selectbox("📅 اختر التاريخ (هجري)", hijri_labels)
-        selected_date = dict(hijri_dates)[selected_label]  # هذا هو التاريخ الميلادي المطابق
+        selected_date = dict(hijri_dates)[selected_label]
 
         values = [selected_date.strftime("%Y-%m-%d")]
-
-
-
-
 
         options_1 = ["في المسجد جماعة = 5 نقاط", "في المنزل جماعة = 4 نقاط", "في المسجد منفرد = 4 نقاط", "في المنزل منفرد = 3 نقاط", "خارج الوقت = 0 نقاط"]
         ratings_1 = {
@@ -260,17 +246,14 @@ with tabs[0]:
             "في المنزل منفرد = 3 نقاط": 3,
             "خارج الوقت = 0 نقاط": 0
         }
-        
+
         for col in columns[1:6]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col}</h4>", unsafe_allow_html=True)
             rating = st.radio(col, options_1, index=0, key=col)
             values.append(str(ratings_1[rating]))
-        
-
 
         checkbox_options = ["الفجر = 1 نقطة", "الظهر القبلية = 1 نقطة", "العصر القبلية = 1 نقطة", "المغرب = 1 نقطة", "العشاء = 1 نقطة"]
         st.markdown(f"<h4 style='font-weight: bold;'>{columns[6]}</h4>", unsafe_allow_html=True)
-        
 
         checkbox_cols = st.columns(1)
         selected_checkboxes = []
@@ -278,51 +261,50 @@ with tabs[0]:
             with checkbox_cols[0]:
                 if st.checkbox(option, key=f"{columns[6]}_{option}"):
                     selected_checkboxes.append(option)
-        score_checkbox = len(selected_checkboxes)  # كل خيار مختار يعطي درجة واحدة
+        score_checkbox = len(selected_checkboxes)
         values.append(str(score_checkbox))
-        
-
 
         time_read_options = ["قرأته لفترتين = 4 نقاط", "قرأته مرة واحدة في اليوم = 2 نقطة", "لم أتمكن من قراءته لهذا اليوم = 0 نقاط"]
-        ratings_read = {"قرأته لفترتين = 4 نقاط": 4, "قرأته مرة واحدة في اليوم = 2 نقطة": 2, "لم أتمكن من قراءته لهذا اليوم = 0 نقاط": 0}
+        ratings_read = {
+            "قرأته لفترتين = 4 نقاط": 4,
+            "قرأته مرة واحدة في اليوم = 2 نقطة": 2,
+            "لم أتمكن من قراءته لهذا اليوم = 0 نقاط": 0
+        }
+
         for col_name in columns[7:9]:
             st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            rating = st.radio("", time_read_options, key=col_name)  # أزلنا horizontal=True
+            rating = st.radio("", time_read_options, key=col_name)
             values.append(str(ratings_read[rating]))
-        
-# زر الإرسال والحفظ
+
+        # ✅ زر الحفظ داخل النموذج
         submit = st.form_submit_button("💾 حفظ")
 
-if submit:
-    if selected_date not in [d for _, d in hijri_dates]:
-        st.error("❌ التاريخ غير صالح. لا يمكن حفظ البيانات لأكثر من أسبوع سابق فقط")
-    else:
-        try:
-            all_dates = worksheet.col_values(1)
-            date_str = selected_date.strftime("%Y-%m-%d")
-
-            try:
-                row_index = all_dates.index(date_str) + 1
-            except ValueError:
-                row_index = len(all_dates) + 1
-                worksheet.update_cell(row_index, 1, date_str)
-
-            for i, val in enumerate(values[1:], start=2):
-                worksheet.update_cell(row_index, i, val)
-
-            st.cache_data.clear()
-            data = load_data()
-            st.success("✅ تم الحفظ بنجاح والاتصال بقاعدة البيانات")
-
-        except Exception as e:
-            if "Quota exceeded" in str(e) or "429" in str(e):
-                st.error("❌ لقد تجاوزت عدد المرات المسموح بها للاتصال بقاعدة البيانات.\n\nيرجى المحاولة مجددًا بعد دقيقة.")
+        if submit:
+            if selected_date not in [d for _, d in hijri_dates]:
+                st.error("❌ التاريخ غير صالح. لا يمكن حفظ البيانات لأكثر من أسبوع سابق فقط")
             else:
-                st.error("❌ حدث خطأ أثناء حفظ البيانات. حاول لاحقًا.")
+                try:
+                    all_dates = worksheet.col_values(1)
+                    date_str = selected_date.strftime("%Y-%m-%d")
 
+                    try:
+                        row_index = all_dates.index(date_str) + 1
+                    except ValueError:
+                        row_index = len(all_dates) + 1
+                        worksheet.update_cell(row_index, 1, date_str)
 
+                    for i, val in enumerate(values[1:], start=2):
+                        worksheet.update_cell(row_index, i, val)
 
+                    st.cache_data.clear()
+                    data = load_data()
+                    st.success("✅ تم الحفظ بنجاح والاتصال بقاعدة البيانات")
 
+                except Exception as e:
+                    if "Quota exceeded" in str(e) or "429" in str(e):
+                        st.error("❌ لقد تجاوزت عدد المرات المسموح بها للاتصال بقاعدة البيانات.\n\nيرجى المحاولة مجددًا بعد دقيقة.")
+                    else:
+                        st.error("❌ حدث خطأ أثناء حفظ البيانات. حاول لاحقًا.")
 
 
 # ===== التبويب الثاني: المحادثة =====
