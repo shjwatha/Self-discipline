@@ -165,7 +165,7 @@ def show_chat():
 
 
 # ===== التبويبات =====
-tabs = st.tabs(["📝 إدخال البيانات", "💬 المحادثات", "📊 تقارير المجموع", "📌 الملاحظات"])
+tabs = st.tabs(["📝 إدخال البيانات", "💬 المحادثات", "📊 تقارير المجموع", "📄 تقرير الإنجاز"])
 
 
 # ===== التبويب الأول: إدخال البيانات =====
@@ -388,27 +388,38 @@ with tabs[2]:
 
     
 # ===== التبويب الرابع: عرض ملاحظات المشرف =====
-with tabs[3]:
-    st.title("📝 ملاحظات المشرف")
+# ===== التبويب الجديد: تقرير الإنجاز =====
+with tabs[3]:  # إضافة تبويب جديد
+    st.title("📄 تقرير الإنجاز")
+
+    # تحديث الزر لجلب البيانات
+    refresh_button("refresh_achievement")
 
     try:
+        # جلب بيانات الإنجازات من ورقة الملاحظات
         notes_sheet = spreadsheet.worksheet("notes")
         notes_data = pd.DataFrame(notes_sheet.get_all_records())
-        notes_data = notes_data[notes_data["username"] == st.session_state["username"]]
+        notes_data = notes_data.rename(columns={
+            "timestamp": "🕒 التاريخ",
+            "username": " الطالب",
+            "mentor": "‍🏫 المشرف",
+            "note": "🏆 الإنجاز"
+        })
     except Exception as e:
-        st.warning("❌ لا يمكن تحميل الملاحظات حاليًا. حاول لاحقًا.")
+        st.warning("❌ لا يمكن تحميل بيانات الإنجازات حالياً. حاول لاحقًا.")
         st.stop()
 
     if notes_data.empty:
-        st.info("📭 لا توجد ملاحظات حتى الآن.")
+        st.info("ℹ️ لا توجد بيانات إنجازات حتى الآن.")
     else:
-        notes_data["date"] = pd.to_datetime(notes_data["date"], errors="coerce")
-        notes_data = notes_data.sort_values(by="date", ascending=False)
+        student_list = notes_data[" الطالب"].unique().tolist()
+        selected_view_student = st.selectbox("📚 اختر الطالب لعرض إنجازاته", student_list, key="student_view_achievement")
 
-        for _, row in notes_data.iterrows():
-            st.markdown(f"""
-            <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
-                <b>📅 التاريخ:</b> {row['date'].date()}<br>
-                <b>📝 الملاحظة:</b><br> {row['note']}
-            </div>
-            """, unsafe_allow_html=True)
+        if st.button("📄 عرض الإنجازات"):
+            filtered = notes_data[notes_data[" الطالب"] == selected_view_student]
+
+            if filtered.empty:
+                st.warning("⚠️ لا توجد إنجازات مسجلة لهذا الطالب بعد.")
+            else:
+                # عرض الإنجازات بطريقة منظمة
+                st.dataframe(filtered[["🕒 التاريخ", " الطالب", "‍🏫 المشرف", "🏆 الإنجاز"]], use_container_width=True)
