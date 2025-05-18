@@ -4,6 +4,8 @@ import pandas as pd
 import json
 from google.oauth2.service_account import Credentials
 
+st.set_page_config(page_title="لوحة إدارة المستخدمين", page_icon="🛠️")
+
 # إعداد الاتصال بقاعدة بيانات Google Sheets
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
@@ -49,7 +51,7 @@ input, select {
 """, unsafe_allow_html=True)
 
 # إعداد الصفحة وعنوانها
-st.set_page_config(page_title="لوحة إدارة المستخدمين", page_icon="🛠️")
+
 st.title("🛠️ لوحة إدارة المستخدمين")
 
 st.subheader("➕ إنشاء حسابات مستخدمين جديدة (حتى 20 حسابًا دفعة واحدة)")
