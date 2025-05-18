@@ -25,11 +25,11 @@ st.markdown("""
 <input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
 """, unsafe_allow_html=True)
 
-# تحديد حالة الدخول الافتراضية
+# حالة المصادقة الافتراضية
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# ملفات الشيت لكل مستوى
+# معرفات ملفات Google Sheets (15 مستوى)
 SHEET_IDS = {
     "المستوى 1":  "1Jx6MsOy4x5u7XsWFx1G3HpdQS1Ic5_HOEogbnWCXA3c",
     "المستوى 2":  "1kyNn69CTM661nNMhiestw3VVrH6rWrDQl7-dN5eW0kQ",
@@ -56,6 +56,11 @@ if not st.session_state["authenticated"]:
         submitted = st.form_submit_button("دخول")
 
         if submitted:
+            # تصفير بيانات الجلسة قبل البدء
+            for key in ["username", "full_name", "permissions", "sheet_name", "sheet_id", "level"]:
+                if key in st.session_state:
+                    del st.session_state[key]
+
             status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك...")
             user_found = False
 
@@ -82,15 +87,14 @@ if not st.session_state["authenticated"]:
                         break
 
                 except:
-                    continue  # لا نعرض أي تحذير
+                    continue  # تجاهل أي أخطاء في الاتصال
 
             status_msg.empty()
             if not user_found:
+                st.session_state["authenticated"] = False
                 st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
             else:
                 st.success("✅ تم تسجيل الدخول بنجاح")
-
-                # التوجيه حسب نوع الحساب
                 role = st.session_state["permissions"]
                 if role == "admin":
                     st.switch_page("pages/AdminDashboard.py")
@@ -101,7 +105,7 @@ if not st.session_state["authenticated"]:
                 else:
                     st.error("⚠️ صلاحية غير معروفة.")
 else:
-    # التوجيه التلقائي للمستخدم المسجل بالفعل
+    # التوجيه التلقائي إذا كان مسجلاً مسبقًا
     role = st.session_state.get("permissions")
     if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
