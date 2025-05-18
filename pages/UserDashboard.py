@@ -393,45 +393,33 @@ with tabs[2]:
 
 with tabs[3]:
     st.title("📄 تقرير الإنجاز")
-
-    # زر لتحديث البيانات قبل عرض الإنجازات
     refresh_button("refresh_achievement")
 
     try:
-        # جلب بيانات الإنجازات من ورقة "notes"
         notes_sheet = spreadsheet.worksheet("notes")
         notes_data = pd.DataFrame(notes_sheet.get_all_records())
-        
-        # عرض أسماء الأعمدة الأصلية للمتابعة (يمكنك حذف هذه الخطوة بعد التأكد)
-        st.write("أسماء الأعمدة الأصلية:", notes_data.columns.tolist())
-        
-        # إعادة تسمية الأعمدة كما هو مطلوب
-        rename_columns = {
-            "timestamp": "🕒 التاريخ",
-            "المشرف": "‍🏫 المشرف",
-            "الملاحظة": "🏆 الإنجاز"
-        }
-        notes_data = notes_data.rename(columns=rename_columns)
-        
-        # عرض أسماء الأعمدة بعد إعادة التسمية (للتأكد)
-        st.write("أسماء الأعمدة بعد إعادة التسمية:", notes_data.columns.tolist())
-    except Exception as e:
+    except Exception:
         st.warning("❌ لا يمكن تحميل بيانات الإنجازات حالياً. حاول لاحقًا.")
         st.stop()
 
-    if notes_data.empty:
-        st.info("ℹ️ لا توجد بيانات إنجازات حتى الآن.")
+    if "full_name" not in st.session_state:
+        st.warning("⚠️ لا يمكن تحديد اسمك. يرجى تسجيل الدخول مجددًا.")
+        st.stop()
+
+    user_full_name = st.session_state["full_name"]
+
+    user_notes = notes_data[notes_data["الطالب"] == user_full_name]
+
+    if user_notes.empty:
+        st.info("📭 لا توجد إنجازات مسجلة باسمك حتى الآن.")
     else:
-        # استخدام العمود "الطالب" لإنشاء قائمة الطلاب المتاحين
-        student_list = notes_data["الطالب"].unique().tolist()
-        selected_view_student = st.selectbox("📚 اختر الطالب لعرض إنجازاته", student_list, key="student_view_achievement")
-    
-        if st.button("📄 عرض الإنجازات"):
-            filtered = notes_data[notes_data["الطالب"] == selected_view_student]
-            if filtered.empty:
-                st.warning("⚠️ لا توجد إنجازات مسجلة لهذا الطالب بعد.")
-            else:
-                st.dataframe(
-                    filtered[["🕒 التاريخ", "الطالب", "‍🏫 المشرف", "🏆 الإنجاز"]],
-                    use_container_width=True
-                )
+        user_notes["timestamp"] = pd.to_datetime(user_notes["timestamp"], errors="coerce")
+        user_notes = user_notes.sort_values(by="timestamp", ascending=False)
+
+        for _, row in user_notes.iterrows():
+            st.markdown(f"""
+                <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;'>
+                    <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
+                    <b>🏆 الإنجاز:</b> {row['الملاحظة']}
+                </div>
+            """, unsafe_allow_html=True)
