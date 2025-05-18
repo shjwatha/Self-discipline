@@ -392,34 +392,35 @@ with tabs[2]:
 # ===== التبويب الجديد: تقرير الإنجاز =====
 
 with tabs[3]:
-    st.title("📄 تقرير الإنجاز")
-    refresh_button("refresh_achievement")
+    st.title("🏆 تقرير الإنجاز")
 
     try:
         notes_sheet = spreadsheet.worksheet("notes")
         notes_data = pd.DataFrame(notes_sheet.get_all_records())
-    except Exception:
-        st.warning("❌ لا يمكن تحميل بيانات الإنجازات حالياً. حاول لاحقًا.")
+    except Exception as e:
+        st.warning("❌ لا يمكن تحميل الإنجازات حاليًا. حاول لاحقًا.")
         st.stop()
 
-    if "username" not in st.session_state:
+    # تحقق من وجود اسم المستخدم
+    if "full_name" not in st.session_state:
         st.warning("⚠️ لا يمكن تحديد اسمك. يرجى تسجيل الدخول مجددًا.")
         st.stop()
 
-    user_full_name = st.session_state["username"]
+    user_name = st.session_state["full_name"]
 
-    user_notes = notes_data[notes_data["الطالب"] == user_username]
+    # 🔹 القسم الأول: عرض إنجازات المستخدم الحالي
+    user_notes = notes_data[notes_data["الطالب"] == user_name]
 
     if user_notes.empty:
-        st.info("📭 لا توجد إنجازات مسجلة باسمك حتى الآن.")
+        st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
     else:
         user_notes["timestamp"] = pd.to_datetime(user_notes["timestamp"], errors="coerce")
         user_notes = user_notes.sort_values(by="timestamp", ascending=False)
 
         for _, row in user_notes.iterrows():
             st.markdown(f"""
-                <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;'>
-                    <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
-                    <b>🏆 الإنجاز:</b> {row['الملاحظة']}
-                </div>
+            <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
+                <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
+                <b>🏆 الإنجاز:</b><br> {row['الملاحظة']}
+            </div>
             """, unsafe_allow_html=True)
