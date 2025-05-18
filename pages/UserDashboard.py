@@ -396,22 +396,18 @@ with tabs[3]:
     try:
         notes_sheet = spreadsheet.worksheet("notes")
         notes_data = pd.DataFrame(notes_sheet.get_all_records())
-    except Exception as e:
+    except Exception:
         st.warning("❌ لا يمكن تحميل الإنجازات حاليًا. حاول لاحقًا.")
         st.stop()
 
-    # التحقق من وجود الاسم الكامل في الجلسة
-    if "full_name" not in st.session_state:
+    # التأكد من أن اسم الطالب متوفر
+    user_fullname = st.session_state.get("full_name", "").strip()
+    if not user_fullname:
         st.warning("⚠️ لا يمكن تحديد اسمك. يرجى تسجيل الدخول مجددًا.")
         st.stop()
 
-    full_name = st.session_state["full_name"]
-
-    # عرض الاسم الذي سيتم البحث به
-    st.caption(f"يتم عرض الإنجازات للمستخدم: {full_name}")
-
-    # تصفية الإنجازات للمستخدم الحالي فقط
-    user_notes = notes_data[notes_data["الطالب"] == full_name]
+    # 🔹 القسم الأول: عرض إنجازات المستخدم الحالي
+    user_notes = notes_data[notes_data["الطالب"].astype(str).str.strip() == user_fullname]
 
     if user_notes.empty:
         st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
@@ -421,8 +417,8 @@ with tabs[3]:
 
         for _, row in user_notes.iterrows():
             st.markdown(f"""
-            <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
-                <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
-                <b>🏆 الإنجاز:</b><br> {row['الملاحظة']}
-            </div>
+                <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
+                    <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
+                    <b>🏆 الإنجاز:</b><br> {row['الملاحظة']}
+                </div>
             """, unsafe_allow_html=True)
