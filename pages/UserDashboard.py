@@ -37,11 +37,16 @@ if st.session_state["permissions"] != "user":
     st.stop()
 
 username = st.session_state["username"]
-sheet_name = f"بيانات - {username}"
+
+# الاتصال بملف الشيت الخاص بالمستخدم
 try:
-    spreadsheet = client.open_by_key("1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY")
-except Exception:
-    st.error("❌ حدث خطأ أثناء الاتصال بقاعدة البيانات. حاول مرة أخرى.")
+    spreadsheet = client.open_by_key(st.session_state["sheet_id"])
+    admin_sheet = spreadsheet.worksheet("admin")
+except Exception as e:
+    if "Quota exceeded" in str(e) or "429" in str(e):
+        st.error("❌ لقد تجاوزت عدد المرات المسموح لك بها الاتصال بقاعدة البيانات.\n\nيرجى المحاولة مجددًا بعد دقيقة.")
+    else:
+        st.error("❌ حدث خطأ أثناء الاتصال بقاعدة البيانات. حاول مرة أخرى.")
     st.markdown("""<script>
         setTimeout(function() {
             window.location.href = "/home";
@@ -49,7 +54,17 @@ except Exception:
     </script>""", unsafe_allow_html=True)
     st.stop()
 
-worksheet = spreadsheet.worksheet(sheet_name)
+# استخراج اسم ورقة المستخدم من admin
+try:
+    admin_df = pd.DataFrame(admin_sheet.get_all_records())
+    sheet_name = admin_df.loc[admin_df["username"] == username, "sheet_name"].values[0]
+    worksheet = spreadsheet.worksheet(sheet_name)
+except:
+    st.error("❌ لا يمكن العثور على ورقة البيانات الخاصة بك.")
+    st.stop()
+
+
+
 columns = worksheet.row_values(1)
 
 # ===== جلب اسم المشرف =====
@@ -70,10 +85,19 @@ def refresh_button(key):
         st.cache_data.clear()
         st.rerun()
 
+@st.cache_data
 def load_data():
-    data = worksheet.get_all_records()
-    df = pd.DataFrame(data)
-    return df
+    try:
+        data = worksheet.get_all_records()
+        df = pd.DataFrame(data)
+        return df
+    except Exception as e:
+        if "Quota exceeded" in str(e) or "429" in str(e):
+            st.error("❌ لقد تجاوزت عدد المرات المسموح بها للاتصال بقاعدة البيانات.\n\nيرجى المحاولة مجددًا بعد دقيقة.")
+        else:
+            st.error("❌ حدث خطأ أثناء تحميل البيانات. حاول لاحقًا.")
+        st.stop()
+
 
 # ===== دالة عرض المحادثة =====
 
@@ -265,51 +289,35 @@ with tabs[0]:
             rating = st.radio("", time_read_options, key=col_name)  # أزلنا horizontal=True
             values.append(str(ratings_read[rating]))
         
-# المجموعة الأولى: نعم = 2 نقطة، لا = 0 نقطة
-        yes_no_options_2pts = ["نعم = 2 نقطة", "لا = 0 نقطة"]
-        ratings_yes2 = {"نعم = 2 نقطة": 2, "لا = 0 نقطة": 0}
-        
-        for col_name in columns[9:13]:
-            st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-            rating = st.radio("", yes_no_options_2pts, horizontal=True, key=col_name)
-            values.append(str(ratings_yes2[rating]))
-        
-        # المجموعة الثانية: نعم = 1 نقطة، لا = 0 نقطة
-        yes_no_options_1pt = ["نعم = 1 نقطة", "لا = 0 نقطة"]
-        ratings_yes1 = {"نعم = 1 نقطة": 1, "لا = 0 نقطة": 0}
-        
-        # باقي الأعمدة إذا وُجدت
-        if len(columns) > 13:
-            remaining_columns = columns[13:]
-            for col_name in remaining_columns:
-                st.markdown(f"<h4 style='font-weight: bold;'>{col_name}</h4>", unsafe_allow_html=True)
-                rating = st.radio("", yes_no_options_1pt, horizontal=True, key=col_name)
-                values.append(str(ratings_yes1[rating])) 
-        
-        
-        # زر الإرسال والحفظ
-        submit = st.form_submit_button("💾 حفظ")
-        
-        if submit:
-            if selected_date not in [d for _, d in hijri_dates]:
-                st.error("❌ التاريخ غير صالح. لا يمكن حفظ البيانات لأكثر من أسبوع سابق فقط")
+# زر الإرسال والحفظ
+submit = st.form_submit_button("💾 حفظ")
+
+if submit:
+    if selected_date not in [d for _, d in hijri_dates]:
+        st.error("❌ التاريخ غير صالح. لا يمكن حفظ البيانات لأكثر من أسبوع سابق فقط")
+    else:
+        try:
+            all_dates = worksheet.col_values(1)
+            date_str = selected_date.strftime("%Y-%m-%d")
+
+            try:
+                row_index = all_dates.index(date_str) + 1
+            except ValueError:
+                row_index = len(all_dates) + 1
+                worksheet.update_cell(row_index, 1, date_str)
+
+            for i, val in enumerate(values[1:], start=2):
+                worksheet.update_cell(row_index, i, val)
+
+            st.cache_data.clear()
+            data = load_data()
+            st.success("✅ تم الحفظ بنجاح والاتصال بقاعدة البيانات")
+
+        except Exception as e:
+            if "Quota exceeded" in str(e) or "429" in str(e):
+                st.error("❌ لقد تجاوزت عدد المرات المسموح بها للاتصال بقاعدة البيانات.\n\nيرجى المحاولة مجددًا بعد دقيقة.")
             else:
-                all_dates = worksheet.col_values(1)
-                date_str = selected_date.strftime("%Y-%m-%d")
-                try:
-                    row_index = all_dates.index(date_str) + 1
-                except ValueError:
-                    row_index = len(all_dates) + 1
-                    worksheet.update_cell(row_index, 1, date_str)
-                for i, val in enumerate(values[1:], start=2):
-                    worksheet.update_cell(row_index, i, val)
-        
-                st.cache_data.clear()
-                data = load_data()
-                st.success("✅ تم الحفظ بنجاح والاتصال بقاعدة البيانات") 
-        
-
-
+                st.error("❌ حدث خطأ أثناء حفظ البيانات. حاول لاحقًا.")
 
 
 
@@ -342,14 +350,19 @@ with tabs[2]:
     st.title("📊 مجموع البنود للفترة")
     refresh_button("refresh_tab2")
 
+    try:
+        df = pd.DataFrame(worksheet.get_all_records())
+    except Exception as e:
+        if "Quota exceeded" in str(e) or "429" in str(e):
+            st.error("❌ لقد تجاوزت عدد المرات المسموح بها للاتصال بقاعدة البيانات.\n\nيرجى المحاولة مجددًا بعد دقيقة.")
+        else:
+            st.error("❌ حدث خطأ أثناء تحميل البيانات. حاول لاحقًا.")
+        st.stop()
 
-
-
-    df = pd.DataFrame(worksheet.get_all_records())
     if "التاريخ" not in df.columns:
         st.warning("⚠️ لا توجد بيانات بعد في ورقة هذا المستخدم. الرجاء البدء بإدخال أول تقييم.")
         st.stop()
- 
+
     df["التاريخ"] = pd.to_datetime(df["التاريخ"], errors="coerce")
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 
@@ -388,3 +401,28 @@ with tabs[2]:
         st.markdown(result_df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
     
+# ===== التبويب الرابع: عرض ملاحظات المشرف =====
+with tabs[3]:
+    st.title("📝 ملاحظات المشرف")
+
+    try:
+        notes_sheet = spreadsheet.worksheet("notes")
+        notes_data = pd.DataFrame(notes_sheet.get_all_records())
+        notes_data = notes_data[notes_data["username"] == st.session_state["username"]]
+    except Exception as e:
+        st.warning("❌ لا يمكن تحميل الملاحظات حاليًا. حاول لاحقًا.")
+        st.stop()
+
+    if notes_data.empty:
+        st.info("📭 لا توجد ملاحظات حتى الآن.")
+    else:
+        notes_data["date"] = pd.to_datetime(notes_data["date"], errors="coerce")
+        notes_data = notes_data.sort_values(by="date", ascending=False)
+
+        for _, row in notes_data.iterrows():
+            st.markdown(f"""
+            <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
+                <b>📅 التاريخ:</b> {row['date'].date()}<br>
+                <b>📝 الملاحظة:</b><br> {row['note']}
+            </div>
+            """, unsafe_allow_html=True)
