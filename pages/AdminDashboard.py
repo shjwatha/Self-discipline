@@ -103,6 +103,7 @@ with st.form("create_user_form"):
             }
 
             is_duplicate = False
+            had_error = False
             username_check = username.strip().lower()
             full_name_check = full_name.strip().lower()
 
@@ -120,10 +121,14 @@ with st.form("create_user_form"):
                             break
                     if is_duplicate:
                         break
-                except:
-                    continue
+                except Exception as e:
+                    had_error = True
+                    st.warning(f"⚠️ تعذر قراءة أحد الملفات أثناء التحقق: {e}")
+                    break
 
-            if is_duplicate:
+            if had_error:
+                st.error("⚠️ تعذر التحقق من وجود الاسم. يرجى المحاولة لاحقًا.")
+            elif is_duplicate:
                 st.error("❌ الاسم الكامل أو اسم المستخدم مستخدم من قبل شخص آخر")
             else:
                 try:
