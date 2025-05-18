@@ -2,7 +2,14 @@ import streamlit as st
 import gspread
 import pandas as pd
 import json
+import re
 from google.oauth2.service_account import Credentials
+
+# دالة استخراج مفتاح الملف من الرابط باستخدام تعبير نمطي
+def extract_spreadsheet_id(url):
+    pattern = r"/d/([a-zA-Z0-9-_]+)"
+    match = re.search(pattern, url)
+    return match.group(1) if match else None
 
 # ===== إعداد الاتصال بـ Google Sheets =====
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -10,115 +17,95 @@ creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
 client = gspread.authorize(creds)
 
-# ===== إعداد الصفحة =====
+# ===== قائمة روابط Google Sheets =====
+sheet_links = [
+    "https://docs.google.com/spreadsheets/d/1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY",
+    "https://docs.google.com/spreadsheets/d/1Jx6MsOy4x5u7XsWFx1G3HpdQS1Ic5_HOEogbnWCXA3c",
+    "https://docs.google.com/spreadsheets/d/1kyNn69CTM661nNMhiestw3VVrH6rWrDQl7-dN5eW0kQ",
+    "https://docs.google.com/spreadsheets/d/1rZT2Hnc0f4pc4qKctIRt_eH6Zt2O8yF-SIpS66IzhNU",
+    "https://docs.google.com/spreadsheets/d/19L878i-iQtZgHgqFThSFgWJBFpTsQFiD5QS7lno8rsI",
+    "https://docs.google.com/spreadsheets/d/1YimetyT4xpKGheuN-TFm5J8w6k6cf3yIwQXRmvIqTW0",
+    "https://docs.google.com/spreadsheets/d/1Fxo3XgJHCJgcuXseNjmRePRH4L0t6gpkDv0Sz0Tm_u8",
+    "https://docs.google.com/spreadsheets/d/1t5u5qE8tXSChK4ezshF5FZ_eYMpjR_00xsp4CUrPp5c",
+    "https://docs.google.com/spreadsheets/d/1crt5ERYxrt8Cg1YkcK40CkO3Bribr3vOMmOkttDpR1A",
+    "https://docs.google.com/spreadsheets/d/1v4asV17nPg2u62eYsy1dciQX5WnVqNRmXrWfTY2jvD0",
+    "https://docs.google.com/spreadsheets/d/15waTwimthOdMTeqGS903d8ELR8CtCP3ZivIYSsgLmP4",
+    "https://docs.google.com/spreadsheets/d/1BSqbsfjw0a4TM-C0W0pIh7IhqzZ8jU3ZhFy8gu4CMWo",
+    "https://docs.google.com/spreadsheets/d/1AtsVnicX_6Ew7Oci3xP77r6W3yA-AhntlT3TNGcbPbM",
+    "https://docs.google.com/spreadsheets/d/1jcCGm1rfW_6bNg8tyaK6aOyKvXuC4Jc2w-wrjiDX20s",
+    "https://docs.google.com/spreadsheets/d/1qkhZjgftc7Ro9pGJGdydICHQb0yUtV8P9yWzSCD3ewo"
+]
+
+# ===== إعداد صفحة تسجيل الدخول =====
 st.set_page_config(page_title="تسجيل الدخول", page_icon="🔐")
 st.title("🔐 تسجيل الدخول")
 
-# زر التحديث اليدوي
+# زر لتحديث البيانات يدويًا
 if st.button("🔄 جلب المعلومات من قاعدة البيانات"):
     st.cache_data.clear()
     st.success("✅ تم تحديث البيانات")
 
-# إخفاء الاقتراحات التلقائية في iOS
-st.markdown("""
-<input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
-<input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
-""", unsafe_allow_html=True)
+# إضافة حقول وهمية مخفية لمنع تعبئة iCloud Keychain على iOS
+st.markdown(
+    """
+    <input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
+    <input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
+    """,
+    unsafe_allow_html=True
+)
 
-# الحالة الافتراضية
+# تأكيد حالة الجلسة
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# معرفات Google Sheets لكل مستوى
-SHEET_IDS = {
-    "المستوى 1":  "1Jx6MsOy4x5u7XsWFx1G3HpdQS1Ic5_HOEogbnWCXA3c",
-    "المستوى 2":  "1kyNn69CTM661nNMhiestw3VVrH6rWrDQl7-dN5eW0kQ",
-    "المستوى 3":  "1rZT2Hnc0f4pc4qKctIRt_eH6Zt2O8yF-SIpS66IzhNU",
-    "المستوى 4":  "19L878i-iQtZgHgqFThSFgWJBFpTsQFiD5QS7lno8rsI",
-    "المستوى 5":  "1YimetyT4xpKGheuN-TFm5J8w6k6cf3yIwQXRmvIqTW0",
-    "المستوى 6":  "1Fxo3XgJHCJgcuXseNjmRePRH4L0t6gpkDv0Sz0Tm_u8",
-    "المستوى 7":  "1t5u5qE8tXSChK4ezshF5FZ_eYMpjR_00xsp4CUrPp5c",
-    "المستوى 8":  "1crt5ERYxrt8Cg1YkcK40CkO3Bribr3vOMmOkttDpR1A",
-    "المستوى 9":  "1v4asV17nPg2u62eYsy1dciQX5WnVqNRmXrWfTY2jvD0",
-    "المستوى 10": "15waTwimthOdMTeqGS903d8ELR8CtCP3ZivIYSsgLmP4",
-    "المستوى 11": "1BSqbsfjw0a4TM-C0W0pIh7IhqzZ8jU3ZhFy8gu4CMWo",
-    "المستوى 12": "1AtsVnicX_6Ew7Oci3xP77r6W3yA-AhntlT3TNGcbPbM",
-    "المستوى 13": "1jcCGm1rfW_6bNg8tyaK6aOyKvXuC4Jc2w-wrjiDX20s",
-    "المستوى 14": "1qkhZjgftc7Ro9pGJGdydICHQb0yUtV8P9yWzSCD3ewo",
-    "المستوى 15": "1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY"
-}
-
-# ===== واجهة تسجيل الدخول =====
+# ===== نموذج تسجيل الدخول =====
 if not st.session_state["authenticated"]:
-    if st.session_state.get("login_locked", False):
-        st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
+    with st.form("login_form"):
+        username = st.text_input("اسم المستخدم")
+        password = st.text_input("كلمة المرور", type="password")
+        submitted = st.form_submit_button("دخول")
 
-        if st.button("🔁 حاول مجددًا"):
-            for key in ["login_locked", "authenticated", "username", "full_name", "permissions", "sheet_name", "sheet_id", "level"]:
-                if key in st.session_state:
-                    del st.session_state[key]
-            st.rerun()
-
-    else:
-        with st.form("login_form"):
-            input_value = st.text_input("اسم المستخدم أو الاسم الكامل")
-            password = st.text_input("كلمة المرور", type="password")
-            submitted = st.form_submit_button("دخول")
-
-            if submitted:
-                # تصفير كل القيم السابقة
-                for key in ["authenticated", "username", "full_name", "permissions", "sheet_name", "sheet_id", "level", "login_locked"]:
-                    if key in st.session_state:
-                        del st.session_state[key]
-                st.session_state["authenticated"] = False
-
-                status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك...")
-                user_found = False
-
-                input_value = input_value.strip()
-                password = password.strip()
-
-                for level_name, sheet_id in SHEET_IDS.items():
-                    try:
-                        sheet = client.open_by_key(sheet_id).worksheet("admin")
-                        df = pd.DataFrame(sheet.get_all_records())
-
-                        df["username"] = df["username"].astype(str).str.strip()
-                        df["full_name"] = df["full_name"].astype(str).str.strip()
-                        df["password"] = df["password"].astype(str).str.strip()
-
-                        match = df[
-                            ((df["username"] == input_value) | (df["full_name"] == input_value)) &
-                            (df["password"] == password)
-                        ]
-
-                        if not match.empty:
-                            row = match.iloc[0]
-                            st.session_state["authenticated"] = True
-                            st.session_state["username"] = row["username"]
-                            st.session_state["full_name"] = row["full_name"]
-                            st.session_state["permissions"] = row["role"]
-                            st.session_state["sheet_name"] = row["sheet_name"]
-                            st.session_state["sheet_id"] = sheet_id
-                            st.session_state["level"] = level_name
-                            user_found = True
-                            st.rerun()  # ← للدخول الفوري
-                    except:
-                        continue
-
-                status_msg.empty()
-                if not user_found:
-                    st.session_state["login_locked"] = True
-                    st.rerun()
-
+        if submitted:
+            match_found = False
+            # البحث في كل ملف من القائمة
+            for link in sheet_links:
+                sheet_id = extract_spreadsheet_id(link)
+                try:
+                    admin_sheet = client.open_by_key(sheet_id).worksheet("admin")
+                    users_df = pd.DataFrame(admin_sheet.get_all_records())
+                    
+                    # التحقق من وجود المستخدم بناءً على username أو full_name وكلمة المرور
+                    matched = users_df[
+                        (((users_df["username"] == username) | (users_df["full_name"] == username)) &
+                         (users_df["password"] == password))
+                    ]
+                    
+                    if not matched.empty:
+                        user_row = matched.iloc[0]
+                        st.session_state["authenticated"] = True
+                        st.session_state["username"] = user_row["username"]
+                        st.session_state["sheet_url"] = link  # حفظ الرابط الخاص بالملف الذي يتواجد فيه المستخدم
+                        st.session_state["permissions"] = user_row["role"]
+                        st.success("✅ تم تسجيل الدخول")
+                        match_found = True
+                        break  # إيقاف البحث عند إيجاد تطابق
+                except Exception as e:
+                    # يمكن تعديل هذه الرسالة أو تسجيل الخطأ حسب الحاجة
+                    st.error(f"خطأ في الوصول إلى الملف {link}: {e}")
+            if not match_found:
+                st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
 else:
-    # التوجيه التلقائي بعد تسجيل الدخول
-    role = st.session_state.get("permissions")
-    if role == "admin":
-        st.switch_page("pages/AdminDashboard.py")
-    elif role in ["supervisor", "sp"]:
+    # ===== إعادة التوجيه حسب الصلاحيات =====
+    permission = st.session_state.get("permissions")
+    # هنا نستعين برابط الملف المُخزن في الـ session لتحديد الملف الخاص بالمستخدم
+    if permission in ["supervisor", "sp"]:
+        st.write(f"توجيه المشرف: {st.session_state['sheet_url']}")
         st.switch_page("pages/Supervisor.py")
-    elif role == "user":
+    elif permission == "admin":
+        st.write(f"توجيه المسؤول: {st.session_state['sheet_url']}")
+        st.switch_page("pages/AdminDashboard.py")
+    elif permission == "user":
+        st.write(f"توجيه المستخدم: {st.session_state['sheet_url']}")
         st.switch_page("pages/UserDashboard.py")
     else:
         st.error("⚠️ صلاحية غير معروفة.")
