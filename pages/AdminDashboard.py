@@ -107,15 +107,28 @@ with st.form("create_user_form"):
                 try:
                     sheet = client.open_by_key(sid).worksheet("admin")
                     df = pd.DataFrame(sheet.get_all_records())
-                    if username in df["username"].astype(str).values or username in df["full_name"].astype(str).values \
-                       or full_name in df["full_name"].astype(str).values or full_name in df["username"].astype(str).values:
+
+                    # تنظيف وتوحيد الحروف
+                    df["username"] = df["username"].astype(str).str.strip().str.lower()
+                    df["full_name"] = df["full_name"].astype(str).str.strip().str.lower()
+
+                    username_check = username.strip().lower()
+                    full_name_check = full_name.strip().lower()
+
+                    if (
+                        username_check in df["username"].values or
+                        username_check in df["full_name"].values or
+                        full_name_check in df["username"].values or
+                        full_name_check in df["full_name"].values
+                    ):
                         is_duplicate = True
                         break
                 except:
                     continue
 
             if is_duplicate:
-                st.error("🚫 اسم المستخدم محجوز من قبل شخص آخر")
+                st.error("❌ الاسم الكامل أو اسم المستخدم مستخدم من قبل شخص آخر")
+
             else:
                 try:
 
