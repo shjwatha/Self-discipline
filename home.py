@@ -88,15 +88,14 @@ if not st.session_state["authenticated"]:
                             st.session_state["sheet_url"] = link  # حفظ الرابط الخاص بالملف الذي وجد فيه المستخدم
                             st.session_state["permissions"] = user_row["role"]
                             match_found = True
-                            break  # خروج من الحلقة عند إيجاد تطابق
-                    except Exception as e:
-                        # تجاهل أي أخطاء أثناء الوصول إلى الملفات وعدم عرض رسالة الخطأ التفصيلية
+                            st.success("✅ تم تسجيل الدخول بنجاح")
+                            # إعادة تشغيل السكربت فور تسجيل الدخول بنجاح حتى يتم تنفيذ الكود الخاص بإعادة التوجيه
+                            st.experimental_rerun()
+                    except Exception:
+                        # تجاهل الأخطاء (مثل تجاوز الحصة) ولا نقوم بإظهارها للمستخدم
                         continue
 
-            # بعد الانتهاء من البحث، يتم عرض النتيجة المناسبة:
-            if match_found:
-                st.success("✅ تم تسجيل الدخول بنجاح")
-            else:
+            if not match_found:
                 st.error("❌ البيانات المدخلة غير صحيحة")
 else:
     # ===== إعادة التوجيه حسب الصلاحيات =====
