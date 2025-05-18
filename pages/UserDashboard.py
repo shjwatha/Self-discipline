@@ -385,6 +385,10 @@ with tabs[2]:
     if filtered.empty:
         st.warning("⚠️ لا توجد بيانات في الفترة المحددة.")
     else:
+        # التأكد من أن جميع الأعمدة الرقمية فعلاً أرقام
+        for col in filtered.columns:
+            filtered[col] = pd.to_numeric(filtered[col], errors='coerce').fillna(0)
+
         totals = filtered.sum(numeric_only=True)
         total_score = totals.sum()
 
@@ -400,7 +404,6 @@ with tabs[2]:
         result_df["المجموع"] = result_df["المجموع"].apply(lambda x: f"<p style='color:#000080; text-align:center'>{x}</p>")
 
         st.markdown(result_df.to_html(escape=False, index=False), unsafe_allow_html=True)
-
     
 # ===== التبويب الرابع: عرض ملاحظات المشرف =====
 with tabs[3]:
