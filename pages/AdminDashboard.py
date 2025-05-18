@@ -103,36 +103,30 @@ with st.form("create_user_form"):
             }
 
             is_duplicate = False
+            username_check = username.strip().lower()
+            full_name_check = full_name.strip().lower()
+
             for sid in SHEET_IDS.values():
                 try:
                     sheet = client.open_by_key(sid).worksheet("admin")
                     df = pd.DataFrame(sheet.get_all_records())
 
-                    # تنظيف وتوحيد الحروف
-                    df["username"] = df["username"].astype(str).str.strip().str.lower()
-                    df["full_name"] = df["full_name"].astype(str).str.strip().str.lower()
+                    for _, row in df.iterrows():
+                        u = str(row["username"]).strip().lower()
+                        f = str(row["full_name"]).strip().lower()
 
-                    username_check = username.strip().lower()
-                    full_name_check = full_name.strip().lower()
-
-                    if (
-                        username_check in df["username"].values or
-                        username_check in df["full_name"].values or
-                        full_name_check in df["username"].values or
-                        full_name_check in df["full_name"].values
-                    ):
-                        is_duplicate = True
+                        if username_check == u or username_check == f or full_name_check == u or full_name_check == f:
+                            is_duplicate = True
+                            break
+                    if is_duplicate:
                         break
                 except:
                     continue
 
             if is_duplicate:
                 st.error("❌ الاسم الكامل أو اسم المستخدم مستخدم من قبل شخص آخر")
-
             else:
                 try:
-
-
                     worksheet_name = f"بيانات - {username}"
                     worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="30")
                     worksheet.insert_row(get_default_columns(), 1)
