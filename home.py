@@ -88,6 +88,7 @@ if not st.session_state["authenticated"]:
                             st.session_state["sheet_url"] = link
                             st.session_state["sheet_id"] = sheet_id
                             st.session_state["permissions"] = user_row["role"]
+                            st.session_state["full_name"] = user_row["full_name"] 
                             match_found = True
                             break  # خروج من الحلقة عند إيجاد تطابق
                     except Exception:
