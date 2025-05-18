@@ -80,7 +80,7 @@ if not st.session_state["authenticated"]:
                         break
 
                 except Exception as e:
-                    st.warning(f"⚠️ تعذر الوصول إلى ملف {level_name}")
+                    st.warning(f"⚠️ جاري توجيهك للبيانات الخاصة بك {level_name}")
 
             if not user_found:
                 st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
