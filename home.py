@@ -61,17 +61,17 @@ if not st.session_state["authenticated"]:
 
     else:
         with st.form("login_form"):
-            input_value = st.text_input("اسم المستخدم أو الاسم الكامل").strip()
-            password = st.text_input("كلمة المرور", type="password").strip()
+            input_value = st.text_input("اسم المستخدم أو الاسم الكامل", key="login_input").strip()
+            password = st.text_input("كلمة المرور", type="password", key="login_pass").strip()
             submitted = st.form_submit_button("دخول")
 
             if submitted:
-                # تصفير الجلسة لأي محاولة سابقة
-                for key in ["authenticated", "username", "full_name", "permissions", "sheet_name", "sheet_id", "level", "login_locked"]:
-                    if key in st.session_state:
+                # تصفير كامل للجلسة
+                for key in list(st.session_state.keys()):
+                    if key not in ["_is_running_with_streamlit"]:
                         del st.session_state[key]
-                st.session_state["authenticated"] = False
 
+                st.session_state["authenticated"] = False
                 status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك...")
                 user_found = False
 
@@ -80,7 +80,6 @@ if not st.session_state["authenticated"]:
                         sheet = client.open_by_key(sheet_id).worksheet("admin")
                         df = pd.DataFrame(sheet.get_all_records())
 
-                        # تنظيف الأعمدة
                         df["username"] = df["username"].astype(str).str.strip()
                         df["full_name"] = df["full_name"].astype(str).str.strip()
                         df["password"] = df["password"].astype(str).str.strip()
@@ -100,7 +99,7 @@ if not st.session_state["authenticated"]:
                             st.session_state["sheet_id"] = sheet_id
                             st.session_state["level"] = level_name
                             user_found = True
-                            st.rerun()  # ← يدخل فورًا بعد النجاح
+                            st.rerun()
                     except:
                         continue
 
@@ -108,9 +107,8 @@ if not st.session_state["authenticated"]:
                 if not user_found:
                     st.session_state["login_locked"] = True
                     st.rerun()
-
+                    st.stop()  # ← يمنع أي تنفيذ إضافي بعد الفشل
 else:
-    # توجيه حسب نوع المستخدم
     role = st.session_state.get("permissions")
     if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
