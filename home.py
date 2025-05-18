@@ -51,7 +51,7 @@ SHEET_IDS = {
 # نموذج تسجيل الدخول
 if not st.session_state["authenticated"]:
     with st.form("login_form"):
-        username = st.text_input("اسم المستخدم")
+        input_value = st.text_input("اسم المستخدم أو الاسم الكامل")
         password = st.text_input("كلمة المرور", type="password")
         submitted = st.form_submit_button("دخول")
 
@@ -61,7 +61,7 @@ if not st.session_state["authenticated"]:
                 if key in st.session_state:
                     del st.session_state[key]
 
-            status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك...")
+            status_msg = st.info("⏳  جاري توجيهك لملف البيانات الخاص بك قد يستغرق الأمر دقيقة أو دقيقتين...")
             user_found = False
 
             for level_name, sheet_id in SHEET_IDS.items():
@@ -70,14 +70,14 @@ if not st.session_state["authenticated"]:
                     df = pd.DataFrame(sheet.get_all_records())
 
                     match = df[
-                        ((df["username"] == username) | (df["full_name"] == username)) &
+                        ((df["username"] == input_value) | (df["full_name"] == input_value)) &
                         (df["password"] == password)
                     ]
 
                     if not match.empty:
                         row = match.iloc[0]
                         st.session_state["authenticated"] = True
-                        st.session_state["username"] = row["username"]
+                        st.session_state["username"] = row["username"]  # من الجدول
                         st.session_state["full_name"] = row["full_name"]
                         st.session_state["permissions"] = row["role"]
                         st.session_state["sheet_name"] = row["sheet_name"]
@@ -87,7 +87,7 @@ if not st.session_state["authenticated"]:
                         break
 
                 except:
-                    continue  # تجاهل أي أخطاء في الاتصال
+                    continue  # تجاهل أي خطأ في فتح الملفات
 
             status_msg.empty()
             if not user_found:
@@ -105,7 +105,7 @@ if not st.session_state["authenticated"]:
                 else:
                     st.error("⚠️ صلاحية غير معروفة.")
 else:
-    # التوجيه التلقائي إذا كان مسجلاً مسبقًا
+    # إعادة التوجيه التلقائي عند تسجيل الدخول
     role = st.session_state.get("permissions")
     if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
