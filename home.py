@@ -4,7 +4,7 @@ import pandas as pd
 import json
 from google.oauth2.service_account import Credentials
 
-# ===== إعداد الاتصال بـ Google Sheets =====
+# ===== الاتصال بـ Google Sheets =====
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
@@ -14,18 +14,22 @@ client = gspread.authorize(creds)
 st.set_page_config(page_title="تسجيل الدخول", page_icon="🔐")
 st.title("🔐 تسجيل الدخول")
 
-# ===== دعم زر التحديث اليدوي =====
+# زر التحديث اليدوي
 if st.button("🔄 جلب المعلومات من قاعدة البيانات"):
     st.cache_data.clear()
     st.success("✅ تم تحديث البيانات")
 
-# ===== تخطي تعبئة iCloud على iOS =====
+# مدخلات وهمية لإخفاء اقتراحات iOS
 st.markdown("""
-    <input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
-    <input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
+<input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
+<input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
 """, unsafe_allow_html=True)
 
-# ===== ملفات Google Sheets لكل مستوى =====
+# تحديد حالة الدخول الافتراضية
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+# ملفات الشيت لكل مستوى
 SHEET_IDS = {
     "المستوى 1":  "1Jx6MsOy4x5u7XsWFx1G3HpdQS1Ic5_HOEogbnWCXA3c",
     "المستوى 2":  "1kyNn69CTM661nNMhiestw3VVrH6rWrDQl7-dN5eW0kQ",
@@ -41,14 +45,10 @@ SHEET_IDS = {
     "المستوى 12": "1AtsVnicX_6Ew7Oci3xP77r6W3yA-AhntlT3TNGcbPbM",
     "المستوى 13": "1jcCGm1rfW_6bNg8tyaK6aOyKvXuC4Jc2w-wrjiDX20s",
     "المستوى 14": "1qkhZjgftc7Ro9pGJGdydICHQb0yUtV8P9yWzSCD3ewo",
-    "المستوى 15": "1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY",  # الملف الأساسي
+    "المستوى 15": "1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY"
 }
 
-# ===== حالة المصادقة الافتراضية =====
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
-
-# ===== نموذج تسجيل الدخول =====
+# نموذج تسجيل الدخول
 if not st.session_state["authenticated"]:
     with st.form("login_form"):
         username = st.text_input("اسم المستخدم")
@@ -56,7 +56,9 @@ if not st.session_state["authenticated"]:
         submitted = st.form_submit_button("دخول")
 
         if submitted:
+            status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك...")
             user_found = False
+
             for level_name, sheet_id in SHEET_IDS.items():
                 try:
                     sheet = client.open_by_key(sheet_id).worksheet("admin")
@@ -79,12 +81,15 @@ if not st.session_state["authenticated"]:
                         user_found = True
                         break
 
-                except Exception as e:
-                    st.warning(f"⚠️ تعذر الوصول إلى ملف {level_name}")
+                except:
+                    continue  # لا نعرض أي تحذير
 
+            status_msg.empty()
             if not user_found:
                 st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
             else:
+                st.success("✅ تم تسجيل الدخول بنجاح")
+
                 # التوجيه حسب نوع الحساب
                 role = st.session_state["permissions"]
                 if role == "admin":
@@ -96,7 +101,7 @@ if not st.session_state["authenticated"]:
                 else:
                     st.error("⚠️ صلاحية غير معروفة.")
 else:
-    # إعادة التوجيه إن كان مسجلاً بالفعل
+    # التوجيه التلقائي للمستخدم المسجل بالفعل
     role = st.session_state.get("permissions")
     if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
