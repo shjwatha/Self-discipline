@@ -19,7 +19,7 @@ if st.button("🔄 جلب المعلومات من قاعدة البيانات"):
     st.cache_data.clear()
     st.success("✅ تم تحديث البيانات")
 
-# إخفاء اقتراحات iOS التلقائية
+# إخفاء الاقتراحات التلقائية في iOS
 st.markdown("""
 <input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
 <input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
@@ -66,7 +66,7 @@ if not st.session_state["authenticated"]:
             submitted = st.form_submit_button("دخول")
 
             if submitted:
-                # تصفير شامل لأي قيمة سابقة
+                # تصفير كل القيم السابقة
                 for key in ["authenticated", "username", "full_name", "permissions", "sheet_name", "sheet_id", "level", "login_locked"]:
                     if key in st.session_state:
                         del st.session_state[key]
@@ -75,10 +75,17 @@ if not st.session_state["authenticated"]:
                 status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك...")
                 user_found = False
 
+                input_value = input_value.strip()
+                password = password.strip()
+
                 for level_name, sheet_id in SHEET_IDS.items():
                     try:
                         sheet = client.open_by_key(sheet_id).worksheet("admin")
                         df = pd.DataFrame(sheet.get_all_records())
+
+                        df["username"] = df["username"].astype(str).str.strip()
+                        df["full_name"] = df["full_name"].astype(str).str.strip()
+                        df["password"] = df["password"].astype(str).str.strip()
 
                         match = df[
                             ((df["username"] == input_value) | (df["full_name"] == input_value)) &
@@ -95,7 +102,7 @@ if not st.session_state["authenticated"]:
                             st.session_state["sheet_id"] = sheet_id
                             st.session_state["level"] = level_name
                             user_found = True
-                            break
+                            st.rerun()  # ← للدخول الفوري
                     except:
                         continue
 
