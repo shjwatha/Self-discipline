@@ -400,14 +400,20 @@ with tabs[3]:
         st.warning("❌ لا يمكن تحميل الإنجازات حاليًا. حاول لاحقًا.")
         st.stop()
 
-    # التأكد من أن اسم الطالب متوفر
+    # تأكد من وجود الاسم الكامل
     user_fullname = st.session_state.get("full_name", "").strip()
     if not user_fullname:
         st.warning("⚠️ لا يمكن تحديد اسمك. يرجى تسجيل الدخول مجددًا.")
         st.stop()
 
-    # 🔹 القسم الأول: عرض إنجازات المستخدم الحالي
-    user_notes = notes_data[notes_data["الطالب"].astype(str).str.strip() == user_fullname]
+    # تأكد من أن العمود موجود
+    if "الطالب" not in notes_data.columns or "timestamp" not in notes_data.columns or "الملاحظة" not in notes_data.columns:
+        st.error("⚠️ البيانات غير مكتملة في ورقة الإنجازات (notes).")
+        st.stop()
+
+    # تطابق الاسم بعد إزالة الفراغات وتوحيد الكتابة
+    notes_data["الطالب"] = notes_data["الطالب"].astype(str).str.strip()
+    user_notes = notes_data[notes_data["الطالب"] == user_fullname]
 
     if user_notes.empty:
         st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
