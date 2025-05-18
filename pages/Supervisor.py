@@ -27,7 +27,7 @@ creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
 client = gspread.authorize(creds)
 
 try:
-    spreadsheet = client.open_by_key("1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY")
+    spreadsheet = client.open_by_key(st.session_state["sheet_id"])
 except Exception:
     st.error("❌ حدث خطأ أثناء الاتصال بقاعدة البيانات. حاول مرة أخرى.")
     st.markdown("""<script>
