@@ -3,6 +3,7 @@ import gspread
 import pandas as pd
 import json
 import re
+import time
 from google.oauth2.service_account import Credentials
 
 # دالة استخراج مفتاح الملف من الرابط باستخدام تعبير نمطي
@@ -54,7 +55,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# التأكد من حالة الجلسة
+# التأكد من وجود حالة للجلسة
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
@@ -67,7 +68,6 @@ if not st.session_state["authenticated"]:
 
         if submitted:
             match_found = False
-            # استخدام spinner لإظهار رسالة تحويل المستخدم
             with st.spinner("جاري تحويلك لملف البيانات الخاص بك قد يستغرق الأمر دقيقة أو دقيقتين"):
                 for link in sheet_links:
                     sheet_id = extract_spreadsheet_id(link)
@@ -75,7 +75,7 @@ if not st.session_state["authenticated"]:
                         admin_sheet = client.open_by_key(sheet_id).worksheet("admin")
                         users_df = pd.DataFrame(admin_sheet.get_all_records())
                         
-                        # التحقق من وجود المستخدم باستخدام "username" أو "full_name" وكلمة المرور
+                        # التحقق من البيانات بناءً على "username" أو "full_name" وكلمة المرور
                         matched = users_df[
                             (((users_df["username"] == username) | (users_df["full_name"] == username)) &
                              (users_df["password"] == password))
@@ -85,20 +85,28 @@ if not st.session_state["authenticated"]:
                             user_row = matched.iloc[0]
                             st.session_state["authenticated"] = True
                             st.session_state["username"] = user_row["username"]
-                            st.session_state["sheet_url"] = link  # حفظ الرابط الخاص بالملف الذي وجد فيه المستخدم
+                            st.session_state["sheet_url"] = link  # حفظ الرابط الخاص بالمستخدم
                             st.session_state["permissions"] = user_row["role"]
                             match_found = True
-                            st.success("✅ تم تسجيل الدخول بنجاح")
-                            # إعادة تشغيل السكربت فور تسجيل الدخول بنجاح حتى يتم تنفيذ الكود الخاص بإعادة التوجيه
-                            st.experimental_rerun()
+                            break  # خروج من الحلقة عند إيجاد تطابق
                     except Exception:
-                        # تجاهل الأخطاء (مثل تجاوز الحصة) ولا نقوم بإظهارها للمستخدم
+                        # تجاهل أي أخطاء مثل تجاوز الحصة دون عرضها للمستخدم
                         continue
 
-            if not match_found:
+            if match_found:
+                st.success("✅ تم تسجيل الدخول بنجاح")
+                # تأخير بسيط لإتاحة عرض رسالة النجاح ثم التوجيه
+                time.sleep(1.5)
+                if st.session_state["permissions"] in ["supervisor", "sp"]:
+                    st.switch_page("pages/Supervisor.py")
+                elif st.session_state["permissions"] == "admin":
+                    st.switch_page("pages/AdminDashboard.py")
+                elif st.session_state["permissions"] == "user":
+                    st.switch_page("pages/UserDashboard.py")
+            else:
                 st.error("❌ البيانات المدخلة غير صحيحة")
 else:
-    # ===== إعادة التوجيه حسب الصلاحيات =====
+    # إذا كانت بيانات الجلسة تشير إلى تسجيل دخول صحيح يتم إعادة التوجيه مباشرة
     permission = st.session_state.get("permissions")
     if permission in ["supervisor", "sp"]:
         st.switch_page("pages/Supervisor.py")
