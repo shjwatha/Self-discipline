@@ -4,7 +4,7 @@ import pandas as pd
 import json
 from google.oauth2.service_account import Credentials
 
-# ===== الاتصال بـ Google Sheets =====
+# ===== إعداد الاتصال بـ Google Sheets =====
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
@@ -19,17 +19,17 @@ if st.button("🔄 جلب المعلومات من قاعدة البيانات"):
     st.cache_data.clear()
     st.success("✅ تم تحديث البيانات")
 
-# مدخلات وهمية لإخفاء اقتراحات iOS
+# إخفاء تعبئة iOS التلقائية
 st.markdown("""
 <input type="text" name="fake_username" style="opacity:0; position:absolute; top:-1000px;">
 <input type="password" name="fake_password" style="opacity:0; position:absolute; top:-1000px;">
 """, unsafe_allow_html=True)
 
-# حالة المصادقة الافتراضية
+# الحالة الأولية
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# معرفات ملفات Google Sheets (15 مستوى)
+# معرفات Google Sheets لكل مستوى
 SHEET_IDS = {
     "المستوى 1":  "1Jx6MsOy4x5u7XsWFx1G3HpdQS1Ic5_HOEogbnWCXA3c",
     "المستوى 2":  "1kyNn69CTM661nNMhiestw3VVrH6rWrDQl7-dN5eW0kQ",
@@ -48,70 +48,73 @@ SHEET_IDS = {
     "المستوى 15": "1gOmeFwHnRZGotaUHqVvlbMtVVt1A2L7XeIuolIyJjAY"
 }
 
-# نموذج تسجيل الدخول
+# ===== نموذج تسجيل الدخول =====
 if not st.session_state["authenticated"]:
-    with st.form("login_form"):
-        input_value = st.text_input("اسم المستخدم أو الاسم الكامل")
-        password = st.text_input("كلمة المرور", type="password")
-        submitted = st.form_submit_button("دخول")
+    if st.session_state.get("login_locked", False):
+        st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
 
-        if submitted:
-            # تصفير بيانات الجلسة قبل البدء
-            for key in ["username", "full_name", "permissions", "sheet_name", "sheet_id", "level"]:
-                if key in st.session_state:
-                    del st.session_state[key]
-            st.session_state["authenticated"] = False
+        st.markdown("""
+        <div style='text-align: center; margin-top: 10px;'>
+            <a href="" style="text-decoration: none;">
+                <button style="
+                    background-color: #f44336;
+                    color: white;
+                    padding: 8px 20px;
+                    border: none;
+                    border-radius: 5px;
+                    font-weight: bold;
+                    cursor: pointer;">
+                    🔁 حاول مجددًا
+                </button>
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
 
-            status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك قد يستغرق الأمر دقيقة أو دقيقتين...")
-            user_found = False
+    else:
+        with st.form("login_form"):
+            input_value = st.text_input("اسم المستخدم أو الاسم الكامل")
+            password = st.text_input("كلمة المرور", type="password")
+            submitted = st.form_submit_button("دخول")
 
-            for level_name, sheet_id in SHEET_IDS.items():
-                try:
-                    sheet = client.open_by_key(sheet_id).worksheet("admin")
-                    df = pd.DataFrame(sheet.get_all_records())
-
-                    match = df[
-                        ((df["username"] == input_value) | (df["full_name"] == input_value)) &
-                        (df["password"] == password)
-                    ]
-
-
-                    if not match.empty:
-                        row = match.iloc[0]
-                        st.session_state["authenticated"] = True
-                        st.session_state["username"] = row["username"]
-                        st.session_state["full_name"] = row["full_name"]
-                        st.session_state["permissions"] = row["role"]
-                        st.session_state["sheet_name"] = row["sheet_name"]
-                        st.session_state["sheet_id"] = sheet_id
-                        st.session_state["level"] = level_name
-                        user_found = True
-                        break
-
-                except:
-                    continue  # تجاهل الأخطاء
-
-            status_msg.empty()
-            if not user_found:
-                # تصفير الجلسة بالكامل بعد فشل الدخول
-                st.session_state["authenticated"] = False
+            if submitted:
+                # تصفير الجلسة
                 for key in ["username", "full_name", "permissions", "sheet_name", "sheet_id", "level"]:
                     if key in st.session_state:
                         del st.session_state[key]
-                st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
-            else:
-                st.success("✅ تم تسجيل الدخول بنجاح")
-                role = st.session_state["permissions"]
-                if role == "admin":
-                    st.switch_page("pages/AdminDashboard.py")
-                elif role in ["supervisor", "sp"]:
-                    st.switch_page("pages/Supervisor.py")
-                elif role == "user":
-                    st.switch_page("pages/UserDashboard.py")
-                else:
-                    st.error("⚠️ صلاحية غير معروفة.")
+                st.session_state["authenticated"] = False
+
+                status_msg = st.info("⏳ جاري توجيهك لملف البيانات الخاص بك...")
+                user_found = False
+
+                for level_name, sheet_id in SHEET_IDS.items():
+                    try:
+                        sheet = client.open_by_key(sheet_id).worksheet("admin")
+                        df = pd.DataFrame(sheet.get_all_records())
+
+                        match = df[
+                            ((df["username"] == input_value) | (df["full_name"] == input_value)) &
+                            (df["password"] == password)
+                        ]
+
+                        if not match.empty:
+                            row = match.iloc[0]
+                            st.session_state["authenticated"] = True
+                            st.session_state["username"] = row["username"]
+                            st.session_state["full_name"] = row["full_name"]
+                            st.session_state["permissions"] = row["role"]
+                            st.session_state["sheet_name"] = row["sheet_name"]
+                            st.session_state["sheet_id"] = sheet_id
+                            st.session_state["level"] = level_name
+                            user_found = True
+                            break
+                    except:
+                        continue
+
+                status_msg.empty()
+                if not user_found:
+                    st.session_state["login_locked"] = True
 else:
-    # التوجيه التلقائي إذا سبق الدخول
+    # توجيه تلقائي إذا تم تسجيل الدخول
     role = st.session_state.get("permissions")
     if role == "admin":
         st.switch_page("pages/AdminDashboard.py")
