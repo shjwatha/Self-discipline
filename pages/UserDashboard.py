@@ -402,11 +402,11 @@ with tabs[3]:
         st.warning("❌ لا يمكن تحميل بيانات الإنجازات حالياً. حاول لاحقًا.")
         st.stop()
 
-    if "full_name" not in st.session_state:
+    if "username" not in st.session_state:
         st.warning("⚠️ لا يمكن تحديد اسمك. يرجى تسجيل الدخول مجددًا.")
         st.stop()
 
-    user_full_name = st.session_state["full_name"]
+    user_full_name = st.session_state["username"]
 
     user_notes = notes_data[notes_data["الطالب"] == user_username]
 
