@@ -74,7 +74,7 @@ st.subheader("➕ إنشاء حساب جديد")
 with st.form("create_user_form"):
     
     username = st.text_input("الاسم الكامل")
-    full_name = st.text_input("اسم الميتخدم")
+    full_name = st.text_input("اسم المستخدم")
     password = st.text_input("كلمة المرور")
     role = "user"
 
