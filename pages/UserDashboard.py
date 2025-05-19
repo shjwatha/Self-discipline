@@ -165,7 +165,8 @@ def show_chat():
 
 
 # ===== التبويبات =====
-tabs = st.tabs(["📝 إدخال البيانات", "💬 المحادثات", "📊 تقارير المجموع", "📄 تقرير الإنجاز"])
+tabs = st.tabs(["📝 إدخال البيانات", "💬 المحادثات", "📊 تقارير المجموع", "🗒️ الإنجازات"])
+
 
 
 # ===== التبويب الأول: إدخال البيانات =====
@@ -387,41 +388,34 @@ with tabs[2]:
         st.markdown(result_df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
     
-
-
-# ===== التبويب الجديد: تقرير الإنجاز =====
+# ===== التبويب الرابع: الإنجازات =====
 with tabs[3]:
-    st.title("🏆 تقرير الإنجاز")
+    st.title("🗒️ الإنجازات")
+
+    refresh_button("refresh_notes")
 
     try:
         notes_sheet = spreadsheet.worksheet("notes")
         notes_data = pd.DataFrame(notes_sheet.get_all_records())
     except Exception as e:
-        st.warning("❌ لا يمكن تحميل الإنجازات حاليًا. حاول لاحقًا.")
+        st.error("❌ تعذر تحميل ورقة الملاحظات.")
         st.stop()
 
-    full_name = st.session_state.get("full_name", "").strip().lower()
-
-    if not full_name:
-        st.warning("⚠️ لا يمكن تحديد اسمك. يرجى تسجيل الدخول مجددًا.")
-        st.stop()
-
-    # توحيد البيانات للتأكد من التصفية
-    notes_data["الطالب"] = notes_data["الطالب"].astype(str).str.strip().str.lower()
-
-    # تصفية الملاحظات
-    user_notes = notes_data[notes_data["الطالب"] == full_name]
-
-    if user_notes.empty:
-        st.info("📭 لا توجد إنجازات مسجلة حتى الآن.")
+    if notes_data.empty or "الطالب" not in notes_data.columns:
+        st.info("📭 لا توجد ملاحظات حتى الآن.")
     else:
-        user_notes["timestamp"] = pd.to_datetime(user_notes["timestamp"], errors="coerce")
-        user_notes = user_notes.sort_values(by="timestamp", ascending=False)
+        # تصفية الملاحظات الخاصة بالطالب الحالي
+        user_notes = notes_data[notes_data["الطالب"] == username]
 
-        for _, row in user_notes.iterrows():
-            st.markdown(f"""
-            <div style='border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px;'>
-                <b>📅 التاريخ:</b> {row['timestamp'].date()}<br>
-                <b>🏆 الإنجاز:</b><br> {row['الملاحظة']}
-            </div>
-            """, unsafe_allow_html=True)
+        if user_notes.empty:
+            st.warning("📭 لا توجد ملاحظات مسجلة لك حتى الآن.")
+        else:
+            user_notes = user_notes[["timestamp", "المشرف", "الملاحظة"]]
+            user_notes.rename(columns={
+                "timestamp": "📅 التاريخ",
+                "المشرف": "👤 المشرف",
+                "الملاحظة": "📝 الملاحظة"
+            }, inplace=True)
+
+            st.dataframe(user_notes, use_container_width=True)
+
