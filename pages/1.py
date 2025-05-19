@@ -3,7 +3,7 @@ import datetime
 
 # بيانات الاتصال بـ Supabase
 SUPABASE_URL = "https://ybdmuwjjlfrwtesoqhqz.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InliZG11d2pqbGZyd3Rlc29xaHF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2MjE5MzIsImV4cCI6MjA2MzE5NzkzMn0.1Fpa-RZlTeOt8EeBHZwEn0OoWY-WGyH40GE1W1GOAck"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
