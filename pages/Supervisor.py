@@ -415,9 +415,25 @@ with tabs[6]:
     selected_achievement = st.selectbox("🏆 اختر الإنجاز", achievements, key="achievement_select")
 
     if st.button("✅ رصد الإنجاز"):
-        timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        notes_ws.append_row([timestamp, selected_student, username, selected_achievement])
-        st.success("✅ تم رصد الإنجاز للطالب بنجاح.")
+        # التحقق من التكرار
+        already_exists = False
+        if not notes_data.empty:
+            exists_df = notes_data[
+                (notes_data["الطالب"] == selected_student) &
+                (notes_data["الملاحظة"] == selected_achievement)
+            ]
+            if not exists_df.empty:
+                already_exists = True
+
+        if already_exists:
+            st.warning("⚠️ هذا الإنجاز تم رصده مسبقًا لهذا الطالب. لا يمكن تكراره.")
+        else:
+            timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            notes_ws.append_row([timestamp, selected_student, username, selected_achievement])
+            st.success("✅ تم رصد الإنجاز للطالب بنجاح.")
+            st.cache_data.clear()
+            st.rerun()
+
 
     # 🔵 القسم الثاني: استعراض إنجازات طالب معين
     st.markdown("---")
